@@ -245,6 +245,38 @@ adminRouter.put("/products/:id", async (req, res) => {
   res.json(serializeProduct(product!));
 });
 
+adminRouter.put("/products/:id/images", async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await getProductWithImages(id);
+  if (!existing) {
+    res.status(404).json({ error: "Produto não encontrado" });
+    return;
+  }
+  const imageIds = Array.isArray(req.body?.imageIds) ? req.body.imageIds.map((item: unknown) => String(item || "").trim()).filter(Boolean) : [];
+  const existingIds = existing.images.map((img) => img.id);
+  const uniqueIds = [...new Set(imageIds)];
+  if (
+    uniqueIds.length !== existingIds.length ||
+    uniqueIds.length !== imageIds.length ||
+    uniqueIds.some((imageId) => !existingIds.includes(imageId))
+  ) {
+    res.status(400).json({ error: "Ordem de imagens inválida" });
+    return;
+  }
+  await prisma.$transaction(
+    imageIds.map((imageId: string, sortOrder: number) =>
+      prisma.productImage.update({ where: { id: imageId }, data: { sortOrder } }),
+    ),
+  );
+  const ordered = imageIds.map((imageId: string) => existing.images.find((img) => img.id === imageId)!);
+  await prisma.product.update({
+    where: { id },
+    data: { imageUrl: ordered[0]?.imageUrl || "" },
+  });
+  const product = await getProductWithImages(id);
+  res.json(serializeProduct(product!));
+});
+
 adminRouter.post("/products/:id/images", async (req, res) => {
   const id = String(req.params.id);
   const urls = [

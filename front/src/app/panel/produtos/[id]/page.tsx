@@ -94,6 +94,13 @@ export default function EditProductPage() {
             });
             setProduct(saved);
           }}
+          onReorder={async (ordered) => {
+            const saved = await api<Product>(`/api/admin/products/${product.id}/images`, {
+              method: "PUT",
+              body: JSON.stringify({ imageIds: ordered.map((item) => item.id) }),
+            });
+            setProduct(saved);
+          }}
         />
         <label>
           <span>

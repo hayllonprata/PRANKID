@@ -902,6 +902,17 @@ img { max-width: 100%; display: block; }
   margin: 0;
   width: 108px;
   height: 108px;
+  cursor: grab;
+}
+
+.image-gallery-item.is-dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+}
+
+.image-gallery-item.is-over {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
 }
 
 .image-gallery-item img {
@@ -911,6 +922,7 @@ img { max-width: 100%; display: block; }
   border: 2px solid #000;
   border-radius: 10px;
   background: #0c0c10;
+  pointer-events: none;
 }
 
 .image-gallery-remove {
