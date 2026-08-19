@@ -59,13 +59,14 @@ export function ProductImagesField({
         Imagens do produto
         <input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/gif"
           disabled={busy}
           onChange={(e) => {
             onFile(e.target.files?.[0]);
             e.target.value = "";
           }}
         />
+        <span className="muted">JPG, PNG e WEBP são convertidos para WEBP para ficar mais leve.</span>
         {busy ? <span>Enviando...</span> : null}
         {error ? <span className="msg err">{error}</span> : null}
       </label>
