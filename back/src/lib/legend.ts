@@ -24,7 +24,7 @@ export const prankidLegendBeats = [
     sortOrder: 4,
     title: "Pixando lojas de luxo",
     caption:
-      "Um dia — cansado de ser ignorado e desvalorizado — ele teve uma ideia: começou a pixar as lojas de luxo e shoppings da cidade com sua assinatura.",
+      "Um dia, cansado de ser ignorado e desvalorizado, ele teve uma ideia: começou a pixar as lojas de luxo e shoppings da cidade com sua assinatura.",
   },
   {
     id: "prankid-05",
