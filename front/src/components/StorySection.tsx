@@ -11,7 +11,9 @@ export function StorySection({ story }: { story: Story | null }) {
           <div>
             <p className="kicker">Os idealizadores</p>
             <h2>{story.title}</h2>
-            <p>{story.description}</p>
+            {story.description.split(/\n\n+/).map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
           </div>
         </div>
       </div>
