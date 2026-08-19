@@ -3,6 +3,7 @@ import { proxyToBackend } from "@/lib/proxy-backend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 120;
 
 async function handle(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;

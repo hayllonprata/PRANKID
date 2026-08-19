@@ -40,7 +40,7 @@ export function ImageField({
         onChange={(e) => onFile(e.target.files?.[0])}
       />
       {busy ? <span>Enviando...</span> : null}
-      <span className="muted">JPG, PNG, GIF, WEBP e HEIC são convertidos para WEBP no envio.</span>
+      <span className="muted">JPG, PNG, GIF, WEBP e HEIC viram WEBP com no máximo 1400px de largura.</span>
       {error ? <span className="msg err">{error}</span> : null}
       {value ? <img className="preview" src={mediaUrl(value)} alt="" /> : null}
     </label>

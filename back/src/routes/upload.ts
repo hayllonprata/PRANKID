@@ -40,9 +40,12 @@ function isHeicUpload(file: Express.Multer.File) {
   return heicMimes.has(mime) || hasHeicExtension(file.originalname || "") || looksLikeHeic(file.buffer);
 }
 
+const MAX_FILE_BYTES = 40 * 1024 * 1024;
+const MAX_FILES = 40;
+
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 },
+  limits: { fileSize: MAX_FILE_BYTES, files: MAX_FILES },
   fileFilter: (_req, file, cb) => {
     const mime = (file.mimetype || "").toLowerCase();
     const octetHeic =
@@ -56,9 +59,20 @@ const upload = multer({
   },
 });
 
+function uploadErrorMessage(err: unknown) {
+  if (!err || typeof err !== "object") return "Falha no upload";
+  const code = "code" in err ? String(err.code) : "";
+  const message = "message" in err ? String(err.message) : "";
+  if (code === "LIMIT_FILE_SIZE") return "A imagem passou de 40 MB. Envie um arquivo menor.";
+  if (code === "LIMIT_FILE_COUNT" || code === "LIMIT_UNEXPECTED_FILE") {
+    return "Não foi possível receber todas as imagens. Envie de novo; arquivos muito grandes são recusados.";
+  }
+  return message || "Falha no upload";
+}
+
 async function rasterBuffer(file: Express.Multer.File) {
   if (!isHeicUpload(file)) return file.buffer;
-  const jpeg = await convertHeic({ buffer: file.buffer, format: "JPEG", quality: 0.95 });
+  const jpeg = await convertHeic({ buffer: file.buffer, format: "JPEG", quality: 0.8 });
   return Buffer.from(jpeg);
 }
 
@@ -71,9 +85,7 @@ async function saveAsWebp(file: Express.Multer.File) {
   if (!animated) pipeline = pipeline.rotate();
   await pipeline
     .resize({
-      width: 1920,
-      height: 1920,
-      fit: "inside",
+      width: 1400,
       withoutEnlargement: true,
     })
     .webp({ quality: 80, effort: 4 })
@@ -89,9 +101,9 @@ async function persistUpload(file: Express.Multer.File) {
 }
 
 uploadRouter.post("/", requireAuth, (req, res) => {
-  upload.array("file", 24)(req, res, async (err) => {
+  upload.array("file", MAX_FILES)(req, res, async (err) => {
     if (err) {
-      res.status(400).json({ error: err.message || "Falha no upload" });
+      res.status(400).json({ error: uploadErrorMessage(err) });
       return;
     }
     const files = Array.isArray(req.files) ? req.files : [];
