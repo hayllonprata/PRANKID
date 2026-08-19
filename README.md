@@ -62,9 +62,9 @@ Crie **dois App services** no mesmo repositório, branch `main`.
 
 - Build path: `front`
 - Porta: `3000`
-- Build arg / variável de build: `NEXT_PUBLIC_API_URL` (URL pública da API)
-- Variável de runtime: `NEXT_PUBLIC_API_URL` (mesma URL)
+- Variável de **runtime** (não precisa ser build arg): `API_URL` = URL pública da API
+  (`https://gerenciamento-prankid-back....easypanel.host`)
 
-`NEXT_PUBLIC_API_URL` precisa existir **no build** do Next.js.
+O browser fala só com o domínio do front. O Next.js encaminha `/api` e `/uploads` para o back.
 
 Não versione o `DATABASE_URL` com senha. Configure só no EasyPanel.
