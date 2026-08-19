@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { api, mediaUrl, type CrewShot } from "@/lib/api";
+import { ConfirmModal } from "@/components/panel/ConfirmModal";
 import { ImageField } from "@/components/panel/ImageField";
 
 export default function CrewPage() {
@@ -11,6 +12,8 @@ export default function CrewPage() {
   const [sortOrder, setSortOrder] = useState("0");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
+  const [pendingId, setPendingId] = useState("");
+  const [busy, setBusy] = useState(false);
 
   async function load() {
     try {
@@ -48,10 +51,19 @@ export default function CrewPage() {
     }
   }
 
-  async function remove(id: string) {
-    if (!confirm("Excluir esta foto?")) return;
-    await api(`/api/admin/crew/${id}`, { method: "DELETE" });
-    load();
+  async function confirmRemove() {
+    if (!pendingId) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api(`/api/admin/crew/${pendingId}`, { method: "DELETE" });
+      setPendingId("");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao excluir");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function toggle(shot: CrewShot) {
@@ -98,13 +110,20 @@ export default function CrewPage() {
               <button className="btn ghost" type="button" onClick={() => toggle(shot)}>
                 {shot.active ? "Ocultar" : "Mostrar"}
               </button>
-              <button className="btn ghost" type="button" onClick={() => remove(shot.id)}>
+              <button className="btn ghost" type="button" onClick={() => setPendingId(shot.id)}>
                 Excluir
               </button>
             </div>
           </div>
         ))}
       </div>
+      <ConfirmModal
+        open={Boolean(pendingId)}
+        message="Excluir esta foto? Essa ação não pode ser desfeita."
+        busy={busy}
+        onCancel={() => !busy && setPendingId("")}
+        onConfirm={confirmRemove}
+      />
     </>
   );
 }

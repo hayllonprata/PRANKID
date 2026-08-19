@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmModal } from "@/components/panel/ConfirmModal";
 import { api, mediaUrl, type ProductImage } from "@/lib/api";
 
 export function ProductImagesField({
@@ -17,6 +18,7 @@ export function ProductImagesField({
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
+  const [pending, setPending] = useState<ProductImage | null>(null);
 
   async function onFiles(fileList?: FileList | null) {
     const files = [...(fileList || [])];
@@ -50,13 +52,14 @@ export function ProductImagesField({
     }
   }
 
-  async function remove(image: ProductImage) {
-    if (!confirm("Excluir esta imagem?")) return;
+  async function confirmRemove() {
+    if (!pending) return;
     setBusy(true);
     setError("");
     try {
-      if (onRemove) await onRemove(image);
-      else onChange?.(images.filter((item) => item.id !== image.id));
+      if (onRemove) await onRemove(pending);
+      else onChange?.(images.filter((item) => item.id !== pending.id));
+      setPending(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao excluir");
     } finally {
@@ -81,7 +84,7 @@ export function ProductImagesField({
         <span className="muted">
           Selecione uma ou várias fotos. JPG, PNG e WEBP são convertidos para WEBP para ficar mais leve.
         </span>
-        {busy ? <span>{progress || "Enviando..."}</span> : null}
+        {progress ? <span>{progress}</span> : null}
         {error ? <span className="msg err">{error}</span> : null}
       </label>
       {images.length ? (
@@ -95,7 +98,7 @@ export function ProductImagesField({
                 type="button"
                 aria-label="Excluir imagem"
                 disabled={busy}
-                onClick={() => remove(image)}
+                onClick={() => setPending(image)}
               >
                 ×
               </button>
@@ -105,6 +108,13 @@ export function ProductImagesField({
       ) : (
         <p className="muted">Nenhuma imagem cadastrada. Envie uma ou mais fotos acima.</p>
       )}
+      <ConfirmModal
+        open={Boolean(pending)}
+        message="Excluir esta imagem? Essa ação não pode ser desfeita."
+        busy={busy}
+        onCancel={() => !busy && setPending(null)}
+        onConfirm={confirmRemove}
+      />
     </div>
   );
 }

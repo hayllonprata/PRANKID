@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ConfirmModal } from "@/components/panel/ConfirmModal";
 import { api } from "@/lib/api";
 
 type SiteAccess = {
@@ -47,6 +48,7 @@ export default function AccessesPage() {
   const [report, setReport] = useState<AccessReport | null>(null);
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
+  const [pending, setPending] = useState<SiteAccess | null>(null);
 
   async function load() {
     try {
@@ -76,11 +78,12 @@ export default function AccessesPage() {
     }
   }
 
-  async function remove(access: SiteAccess) {
-    if (!confirm(`Remover o registro do IP ${access.ip}?`)) return;
-    setBusyId(access.id);
+  async function confirmRemove() {
+    if (!pending) return;
+    setBusyId(pending.id);
     try {
-      await api(`/api/admin/accesses/${access.id}`, { method: "DELETE" });
+      await api(`/api/admin/accesses/${pending.id}`, { method: "DELETE" });
+      setPending(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao excluir");
@@ -162,7 +165,7 @@ export default function AccessesPage() {
                       className="btn sm magenta"
                       type="button"
                       disabled={busyId === access.id}
-                      onClick={() => remove(access)}
+                      onClick={() => setPending(access)}
                     >
                       Excluir
                     </button>
@@ -174,6 +177,13 @@ export default function AccessesPage() {
         </table>
         {report && report.accesses.length === 0 ? <p className="muted">Nenhum acesso registrado ainda.</p> : null}
       </div>
+      <ConfirmModal
+        open={Boolean(pending)}
+        message={pending ? `Excluir o registro do IP ${pending.ip}? Essa ação não pode ser desfeita.` : ""}
+        busy={Boolean(pending && busyId === pending.id)}
+        onCancel={() => !busyId && setPending(null)}
+        onConfirm={confirmRemove}
+      />
     </>
   );
 }

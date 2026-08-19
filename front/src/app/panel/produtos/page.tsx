@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ConfirmModal } from "@/components/panel/ConfirmModal";
 import { api, formatBRL, type Product } from "@/lib/api";
 
 export default function ProductsListPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState("");
+  const [pendingId, setPendingId] = useState("");
+  const [busy, setBusy] = useState(false);
 
   async function load() {
     try {
@@ -20,10 +23,19 @@ export default function ProductsListPage() {
     load();
   }, []);
 
-  async function remove(id: string) {
-    if (!confirm("Excluir este produto?")) return;
-    await api(`/api/admin/products/${id}`, { method: "DELETE" });
-    load();
+  async function confirmRemove() {
+    if (!pendingId) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api(`/api/admin/products/${pendingId}`, { method: "DELETE" });
+      setPendingId("");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao excluir");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -61,7 +73,7 @@ export default function ProductsListPage() {
                   <Link className="btn sm" href={`/panel/produtos/${product.id}`}>
                     Editar
                   </Link>
-                  <button className="btn sm magenta" type="button" onClick={() => remove(product.id)}>
+                  <button className="btn sm magenta" type="button" onClick={() => setPendingId(product.id)}>
                     Excluir
                   </button>
                 </td>
@@ -70,6 +82,13 @@ export default function ProductsListPage() {
           </tbody>
         </table>
       </div>
+      <ConfirmModal
+        open={Boolean(pendingId)}
+        message="Excluir este produto? Essa ação não pode ser desfeita."
+        busy={busy}
+        onCancel={() => !busy && setPendingId("")}
+        onConfirm={confirmRemove}
+      />
     </>
   );
 }
