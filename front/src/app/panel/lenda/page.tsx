@@ -31,7 +31,7 @@ export default function LegendPage() {
         body: JSON.stringify(beat),
       });
       patch(beat.id, saved);
-      setMsg(`Cena ${beat.sortOrder} salva.`);
+      setMsg("Trecho salvo.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao salvar");
     } finally {
@@ -44,29 +44,23 @@ export default function LegendPage() {
   return (
     <>
       <h1>Lenda PRANKID</h1>
-      <p className="muted">Texto da história e uma imagem por cena. A cena vira placeholder até o upload.</p>
+      <p className="muted">A loja mostra a história em texto corrido. As imagens entram numa galeria, sem divisão por cena.</p>
       {msg ? <p className="msg ok">{msg}</p> : null}
       {error ? <p className="msg err">{error}</p> : null}
       {beats.map((beat) => (
         <form className="panel-card form-grid" key={beat.id} onSubmit={(event) => onSave(event, beat)}>
-          <h2>
-            Cena {beat.sortOrder} — {beat.title}
-          </h2>
-          <label>
-            Título da cena
-            <input value={beat.title} onChange={(e) => patch(beat.id, { title: e.target.value })} />
-          </label>
+          <h2>Trecho {beat.sortOrder}</h2>
           <label>
             Texto
             <textarea value={beat.caption} onChange={(e) => patch(beat.id, { caption: e.target.value })} />
           </label>
           <ImageField
-            label="Imagem"
+            label="Imagem (opcional)"
             value={beat.imageUrl}
             onChange={(imageUrl) => patch(beat.id, { imageUrl })}
           />
           <button className="btn" type="submit" disabled={saving === beat.id}>
-            {saving === beat.id ? "Salvando..." : "Salvar cena"}
+            {saving === beat.id ? "Salvando..." : "Salvar trecho"}
           </button>
         </form>
       ))}
