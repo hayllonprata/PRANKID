@@ -1,0 +1,4 @@
+ALTER TABLE "Settings" ADD COLUMN "openaiApiKey" TEXT NOT NULL DEFAULT '';
+
+ALTER TABLE "CustomBrief" ADD COLUMN "transcript" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "CustomBrief" ADD COLUMN "audioUrl" TEXT NOT NULL DEFAULT '';

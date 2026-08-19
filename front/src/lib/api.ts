@@ -39,6 +39,8 @@ export type PersonalBrief = {
   job: string;
   likes: string;
   colors: string;
+  transcript?: string;
+  audioUrl?: string;
 };
 
 export type CrewShot = {
@@ -54,6 +56,8 @@ export type Settings = {
   yampiBaseUrl: string;
   instagram: string;
   footer: string;
+  openaiApiKey?: string;
+  hasOpenaiKey?: boolean;
 };
 
 export type StoreData = {

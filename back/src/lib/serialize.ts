@@ -25,3 +25,20 @@ export function publicSettings(settings: {
     footer: settings.footer,
   };
 }
+
+export function serializeAdminSettings(settings: {
+  whatsapp: string;
+  yampiBaseUrl: string;
+  instagram: string;
+  footer: string;
+  openaiApiKey: string;
+}) {
+  return {
+    whatsapp: settings.whatsapp,
+    yampiBaseUrl: settings.yampiBaseUrl,
+    instagram: settings.instagram,
+    footer: settings.footer,
+    openaiApiKey: "",
+    hasOpenaiKey: Boolean(settings.openaiApiKey),
+  };
+}

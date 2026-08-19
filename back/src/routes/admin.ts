@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { serializeProduct } from "../lib/serialize.js";
+import { serializeAdminSettings, serializeProduct } from "../lib/serialize.js";
 import { requireAuth } from "../middleware/auth.js";
 
 export const adminRouter = Router();
@@ -136,10 +136,24 @@ adminRouter.delete("/crew/:id", async (req, res) => {
 
 adminRouter.get("/settings", async (_req, res) => {
   const settings = await prisma.settings.findUnique({ where: { id: "default" } });
-  res.json(settings);
+  res.json(
+    settings
+      ? serializeAdminSettings(settings)
+      : {
+          whatsapp: "",
+          yampiBaseUrl: "",
+          instagram: "",
+          footer: "",
+          openaiApiKey: "",
+          hasOpenaiKey: false,
+        },
+  );
 });
 
 adminRouter.put("/settings", async (req, res) => {
+  const existing = await prisma.settings.findUnique({ where: { id: "default" } });
+  const incomingKey = String(req.body?.openaiApiKey ?? "").trim();
+  const openaiApiKey = incomingKey || existing?.openaiApiKey || "";
   const settings = await prisma.settings.upsert({
     where: { id: "default" },
     update: {
@@ -147,6 +161,7 @@ adminRouter.put("/settings", async (req, res) => {
       yampiBaseUrl: String(req.body?.yampiBaseUrl ?? "").replace(/\/$/, ""),
       instagram: String(req.body?.instagram ?? ""),
       footer: String(req.body?.footer ?? ""),
+      openaiApiKey,
     },
     create: {
       id: "default",
@@ -154,9 +169,10 @@ adminRouter.put("/settings", async (req, res) => {
       yampiBaseUrl: String(req.body?.yampiBaseUrl ?? "").replace(/\/$/, ""),
       instagram: String(req.body?.instagram ?? ""),
       footer: String(req.body?.footer ?? ""),
+      openaiApiKey,
     },
   });
-  res.json(settings);
+  res.json(serializeAdminSettings(settings));
 });
 
 adminRouter.get("/products", async (_req, res) => {
