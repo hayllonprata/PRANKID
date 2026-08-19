@@ -1,5 +1,5 @@
 export const siteCopy = {
-  metaTitle: "PRANKID — Rebeldia, liberdade e Sucesso",
+  metaTitle: "PRANKID. Rebeldia, liberdade e Sucesso",
   metaDescription:
     "A história de um garoto das ruas que pixou o luxo, virou o artista mais respeitado da cidade e nunca esqueceu de onde veio.",
   heroKicker: "Rebeldia · liberdade · sucesso",
