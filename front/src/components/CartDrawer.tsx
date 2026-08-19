@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api, buildYampiCheckout, formatBRL, mediaUrl, offerPrice, type Product } from "@/lib/api";
+import { api, buildYampiCheckout, formatBRL, mediaUrl, type Product } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
@@ -152,10 +152,7 @@ export function CartDrawer({
                 ? "Ao incluir mais uma peça, o checkout da Yampi aplica 15% em todo o pedido."
                 : "O 15% já vale no total. Mais uma peça também entra no desconto."}
             </p>
-            {offers.map((product) => {
-              const previewList = listTotal + product.price;
-              const previewTotal = offerPrice(previewList);
-              return (
+            {offers.map((product) => (
                 <div className="cart-item" key={product.id}>
                   {mediaUrl(product.imageUrl) ? (
                     <img src={mediaUrl(product.imageUrl)} alt="" />
@@ -164,17 +161,13 @@ export function CartDrawer({
                   )}
                   <div>
                     <strong>{product.name}</strong>
-                    <div>
-                      <s className="muted">{formatBRL(previewList)}</s> {formatBRL(previewTotal)}
-                    </div>
-                    <div className="muted">total com 15% off</div>
+                    <div>{formatBRL(product.price)}</div>
                   </div>
                   <button className="btn magenta" type="button" onClick={() => addOffer(product)}>
                     +1
                   </button>
                 </div>
-              );
-            })}
+              ))}
           </div>
         ) : null}
         <div className="cart-total">
