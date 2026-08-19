@@ -45,7 +45,7 @@ export default function HomePage() {
       <main>
         <HeroSection hero={data.hero} />
         <ProductsSection products={data.products} />
-        <LegendSection beats={data.legend || []} />
+        <LegendSection legend={data.legend} />
         <CrewSection shots={data.crew || []} />
         <StorySection story={data.story} />
       </main>

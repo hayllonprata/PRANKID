@@ -44,13 +44,11 @@ model Story {
   updatedAt   DateTime @updatedAt
 }
 
-model LegendBeat {
-  id        String   @id
-  sortOrder Int
-  title     String
-  caption   String
-  imageUrl  String   @default("")
-  updatedAt DateTime @updatedAt
+model Legend {
+  id          String   @id @default("default")
+  title       String
+  description String
+  updatedAt   DateTime @updatedAt
 }
 
 model Product {

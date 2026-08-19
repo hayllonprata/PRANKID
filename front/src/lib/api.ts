@@ -35,12 +35,10 @@ export type Story = {
   imageUrl: string;
 };
 
-export type LegendBeat = {
+export type Legend = {
   id: string;
-  sortOrder: number;
   title: string;
-  caption: string;
-  imageUrl: string;
+  description: string;
 };
 
 export type PersonalBrief = {
@@ -72,7 +70,7 @@ export type Settings = {
 export type StoreData = {
   hero: Hero | null;
   story: Story | null;
-  legend: LegendBeat[];
+  legend: Legend | null;
   crew: CrewShot[];
   settings: Settings;
   products: Product[];

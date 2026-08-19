@@ -1,25 +1,13 @@
-import { mediaUrl, type LegendBeat } from "@/lib/api";
+import { type Legend } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { BrandLogo } from "./BrandLogo";
 
-function storyParagraphs(beats: LegendBeat[]) {
-  const paragraphs: string[] = [];
-  for (const beat of beats) {
-    const caption = beat.caption.trim();
-    if (!caption) continue;
-    if (beat.sortOrder === 2 && paragraphs.length > 0) {
-      paragraphs[paragraphs.length - 1] = `${paragraphs[paragraphs.length - 1]} ${caption}`;
-      continue;
-    }
-    paragraphs.push(caption);
-  }
-  return paragraphs;
-}
-
-export function LegendSection({ beats }: { beats: LegendBeat[] }) {
-  if (!beats.length) return null;
-  const photos = beats.map((beat) => mediaUrl(beat.imageUrl)).filter(Boolean);
-  const paragraphs = storyParagraphs(beats);
+export function LegendSection({ legend }: { legend: Legend | null }) {
+  if (!legend) return null;
+  const paragraphs = legend.description
+    .split(/\n\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
 
   return (
     <section className="section" id="prankid">
@@ -27,19 +15,12 @@ export function LegendSection({ beats }: { beats: LegendBeat[] }) {
         <div className="legend-story">
           <div>
             <p className="kicker">{siteCopy.legendKicker}</p>
-            <h2>{siteCopy.legendTitle}</h2>
+            <h2>{legend.title || siteCopy.legendTitle}</h2>
             {paragraphs.map((text, index) => (
               <p key={index}>{text}</p>
             ))}
             <BrandLogo href={null} height={56} />
           </div>
-          {photos.length ? (
-            <div className="legend-photos">
-              {photos.map((src) => (
-                <img key={src} src={src} alt="" />
-              ))}
-            </div>
-          ) : null}
         </div>
       </div>
     </section>

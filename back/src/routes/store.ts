@@ -32,7 +32,7 @@ storeRouter.get("/", async (req, res) => {
   const [hero, story, legend, crew, settings, products] = await Promise.all([
     prisma.hero.findUnique({ where: { id: "default" } }),
     prisma.story.findUnique({ where: { id: "default" } }),
-    prisma.legendBeat.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.legend.findUnique({ where: { id: "default" } }),
     prisma.crewShot.findMany({
       where: { active: true },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],

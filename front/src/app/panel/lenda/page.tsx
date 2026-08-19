@@ -1,69 +1,62 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { api, type LegendBeat } from "@/lib/api";
-import { ImageField } from "@/components/panel/ImageField";
+import { api, type Legend } from "@/lib/api";
 
 export default function LegendPage() {
-  const [beats, setBeats] = useState<LegendBeat[]>([]);
+  const [legend, setLegend] = useState<Legend | null>(null);
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
-  const [saving, setSaving] = useState("");
 
   useEffect(() => {
-    api<LegendBeat[]>("/api/admin/legend")
-      .then(setBeats)
+    api<Legend>("/api/admin/legend")
+      .then(setLegend)
       .catch((err: Error) => setError(err.message));
   }, []);
 
-  function patch(id: string, next: Partial<LegendBeat>) {
-    setBeats((current) => current.map((beat) => (beat.id === id ? { ...beat, ...next } : beat)));
-  }
-
-  async function onSave(event: FormEvent, beat: LegendBeat) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!legend) return;
     setMsg("");
     setError("");
-    setSaving(beat.id);
     try {
-      const saved = await api<LegendBeat>(`/api/admin/legend/${beat.id}`, {
+      const saved = await api<Legend>("/api/admin/legend", {
         method: "PUT",
-        body: JSON.stringify(beat),
+        body: JSON.stringify(legend),
       });
-      patch(beat.id, saved);
-      setMsg("Trecho salvo.");
+      setLegend(saved);
+      setMsg("Lenda salva.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao salvar");
-    } finally {
-      setSaving("");
     }
   }
 
-  if (!beats.length && !error) return <p>Carregando...</p>;
+  if (!legend && !error) return <p>Carregando...</p>;
+  if (!legend) return error ? <p className="msg err">{error}</p> : null;
 
   return (
     <>
       <h1>Lenda PRANKID</h1>
-      <p className="muted">A loja mostra a história em texto corrido. As imagens entram numa galeria, sem divisão por cena.</p>
-      {msg ? <p className="msg ok">{msg}</p> : null}
-      {error ? <p className="msg err">{error}</p> : null}
-      {beats.map((beat) => (
-        <form className="panel-card form-grid" key={beat.id} onSubmit={(event) => onSave(event, beat)}>
-          <h2>Trecho {beat.sortOrder}</h2>
-          <label>
-            Texto
-            <textarea value={beat.caption} onChange={(e) => patch(beat.id, { caption: e.target.value })} />
-          </label>
-          <ImageField
-            label="Imagem (opcional)"
-            value={beat.imageUrl}
-            onChange={(imageUrl) => patch(beat.id, { imageUrl })}
+      <p className="muted">O mesmo texto corrido da loja. Separe parágrafos com uma linha em branco.</p>
+      <form className="panel-card form-grid" onSubmit={onSubmit}>
+        <label>
+          Título
+          <input value={legend.title} onChange={(e) => setLegend({ ...legend, title: e.target.value })} />
+        </label>
+        <label>
+          Texto
+          <textarea
+            value={legend.description}
+            onChange={(e) => setLegend({ ...legend, description: e.target.value })}
+            rows={22}
           />
-          <button className="btn" type="submit" disabled={saving === beat.id}>
-            {saving === beat.id ? "Salvando..." : "Salvar trecho"}
-          </button>
-        </form>
-      ))}
+        </label>
+        {msg ? <p className="msg ok">{msg}</p> : null}
+        {error ? <p className="msg err">{error}</p> : null}
+        <button className="btn" type="submit">
+          Salvar
+        </button>
+      </form>
     </>
   );
 }

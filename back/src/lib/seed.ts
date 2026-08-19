@@ -1,6 +1,6 @@
 import { prisma } from "./prisma.js";
 import { hashPassword, verifyPassword } from "./auth.js";
-import { prankidLegendBeats } from "./legend.js";
+import { prankidLegendDescription, prankidLegendTitle } from "./legend.js";
 import { siteCopy } from "./site-copy.js";
 
 async function syncAdminFromEnv() {
@@ -84,19 +84,15 @@ export async function seedIfNeeded() {
     },
   });
 
-  for (const beat of prankidLegendBeats) {
-    await prisma.legendBeat.upsert({
-      where: { id: beat.id },
-      create: {
-        id: beat.id,
-        sortOrder: beat.sortOrder,
-        title: beat.title,
-        caption: beat.caption,
-        imageUrl: "",
-      },
-      update: {},
-    });
-  }
+  await prisma.legend.upsert({
+    where: { id: "default" },
+    update: {},
+    create: {
+      id: "default",
+      title: prankidLegendTitle,
+      description: prankidLegendDescription,
+    },
+  });
 
   const productCount = await prisma.product.count();
   if (productCount === 0) {
