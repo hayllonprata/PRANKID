@@ -77,7 +77,7 @@ export default function NewProductPage() {
         <label>
           <span>
             <input type="checkbox" checked={cartOffer} onChange={(e) => setCartOffer(e.target.checked)} />{" "}
-            Exibir no carrinho (oferta +1 com 15% off)
+            Exibir no carrinho (oferta +1 com 15% no total)
           </span>
         </label>
         <label>

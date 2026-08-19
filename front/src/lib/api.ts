@@ -159,6 +159,10 @@ export function offerPrice(price: number) {
   return Math.round(price * (1 - CART_OFFER_DISCOUNT) * 100) / 100;
 }
 
+export function cartQualifiesForDiscount(items: { qty: number }[]) {
+  return items.reduce((sum, item) => sum + item.qty, 0) >= 2;
+}
+
 export function buildYampiCheckout(
   baseUrl: string,
   items: { yampiToken: string; qty: number }[],

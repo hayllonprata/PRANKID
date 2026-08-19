@@ -15,7 +15,7 @@ export function CartDrawer({
   yampiPromocode?: string;
   products: Product[];
 }) {
-  const { items, total, open, setOpen, setQty, remove, add } = useCart();
+  const { items, total, listTotal, bundleDiscount, count, open, setOpen, setQty, remove, add } = useCart();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Product | null>(null);
@@ -81,7 +81,8 @@ export function CartDrawer({
           }),
         });
       }
-      window.location.href = buildYampiCheckout(yampiBaseUrl, withTokens, yampiPromocode);
+      const checkoutCode = bundleDiscount ? yampiPromocode : undefined;
+      window.location.href = buildYampiCheckout(yampiBaseUrl, withTokens, checkoutCode);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível enviar o briefing.");
       setBusy(false);
@@ -110,7 +111,7 @@ export function CartDrawer({
               )}
               <div>
                 <strong>{item.name}</strong>
-                {item.fromOffer ? <div className="muted">+1 com 15% off</div> : null}
+                {bundleDiscount ? <div className="muted">15% off no total</div> : null}
                 {item.personalized ? <div className="muted">Personalizado</div> : null}
                 {item.brief?.transcript ? <p className="cart-brief">{item.brief.transcript}</p> : null}
                 {item.brief && !item.brief.transcript ? (
@@ -119,7 +120,7 @@ export function CartDrawer({
                   </p>
                 ) : null}
                 <div>
-                  {item.fromOffer ? (
+                  {bundleDiscount ? (
                     <>
                       <s className="muted">{formatBRL(item.listPrice)}</s> {formatBRL(item.price)}
                     </>
@@ -145,36 +146,58 @@ export function CartDrawer({
         )}
         {items.length > 0 && offers.length > 0 ? (
           <div className="cart-offers">
-            <h3>Leva +1 com 15% off</h3>
-            <p className="muted">Escolhe mais um PRANKID com desconto na vitrine.</p>
-            {offers.map((product) => (
-              <div className="cart-item" key={product.id}>
-                {mediaUrl(product.imageUrl) ? (
-                  <img src={mediaUrl(product.imageUrl)} alt="" />
-                ) : (
-                  <div className="cart-thumb" />
-                )}
-                <div>
-                  <strong>{product.name}</strong>
+            <h3>Leva +1 e ganha 15% no total</h3>
+            <p className="muted">
+              {count < 2
+                ? "Ao incluir mais uma peça, o checkout da Yampi aplica 15% em todo o pedido."
+                : "O 15% já vale no total. Mais uma peça também entra no desconto."}
+            </p>
+            {offers.map((product) => {
+              const previewList = listTotal + product.price;
+              const previewTotal = offerPrice(previewList);
+              return (
+                <div className="cart-item" key={product.id}>
+                  {mediaUrl(product.imageUrl) ? (
+                    <img src={mediaUrl(product.imageUrl)} alt="" />
+                  ) : (
+                    <div className="cart-thumb" />
+                  )}
                   <div>
-                    <s className="muted">{formatBRL(product.price)}</s> {formatBRL(offerPrice(product.price))}
+                    <strong>{product.name}</strong>
+                    <div>
+                      <s className="muted">{formatBRL(previewList)}</s> {formatBRL(previewTotal)}
+                    </div>
+                    <div className="muted">total com 15% off</div>
                   </div>
+                  <button className="btn magenta" type="button" onClick={() => addOffer(product)}>
+                    +1
+                  </button>
                 </div>
-                <button className="btn magenta" type="button" onClick={() => addOffer(product)}>
-                  +1
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : null}
         <div className="cart-total">
           <div className="card-row">
-            <span>Total da vitrine</span>
-            <strong>{formatBRL(total)}</strong>
+            <span>{bundleDiscount ? "Total com 15% off" : "Total da vitrine"}</span>
+            <strong>
+              {bundleDiscount ? (
+                <>
+                  <s className="muted" style={{ fontWeight: 400, marginRight: 8 }}>
+                    {formatBRL(listTotal)}
+                  </s>
+                  {formatBRL(total)}
+                </>
+              ) : (
+                formatBRL(total)
+              )}
+            </strong>
           </div>
           <p className="cart-note">
             {yampiPromocode
-              ? "O cupom de 15% vai junto para o checkout da Yampi e continua valendo se você incluir mais peças lá."
+              ? bundleDiscount
+                ? "O cupom de 15% vai no pedido inteiro para o checkout da Yampi, inclusive se você incluir mais peças lá."
+                : "Leva mais um PRANKID para ganhar 15% de desconto no total da compra."
               : "O valor final é confirmado no checkout da Yampi."}
           </p>
           {error ? <p className="cart-error">{error}</p> : null}

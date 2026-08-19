@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { offerPrice, type PersonalBrief, type Product } from "@/lib/api";
+import { cartQualifiesForDiscount, offerPrice, type PersonalBrief, type Product } from "@/lib/api";
 
 export type CartItem = {
   id: string;
@@ -21,6 +21,8 @@ type CartContextValue = {
   items: CartItem[];
   count: number;
   total: number;
+  listTotal: number;
+  bundleDiscount: boolean;
   open: boolean;
   setOpen: (open: boolean) => void;
   add: (product: Product, brief?: PersonalBrief, fromOffer?: boolean) => void;
@@ -37,6 +39,10 @@ function lineId(productId: string, fromOffer: boolean) {
   return fromOffer ? `${productId}__offer` : productId;
 }
 
+function catalogPrice(item: Pick<CartItem, "price" | "listPrice">) {
+  return item.listPrice || item.price;
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
@@ -48,12 +54,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw) as CartItem[];
         setItems(
-          parsed.map((item) => ({
-            ...item,
-            productId: item.productId || item.id.replace(/__offer$/, ""),
-            listPrice: item.listPrice || item.price,
-            fromOffer: Boolean(item.fromOffer),
-          })),
+          parsed.map((item) => {
+            const listPrice = catalogPrice(item);
+            return {
+              ...item,
+              productId: item.productId || item.id.replace(/__offer$/, ""),
+              listPrice,
+              price: listPrice,
+              fromOffer: Boolean(item.fromOffer),
+            };
+          }),
         );
       }
     } catch {
@@ -69,29 +79,56 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const count = items.reduce((sum, item) => sum + item.qty, 0);
-    const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const bundleDiscount = cartQualifiesForDiscount(items);
+    const displayItems = items.map((item) => {
+      const listPrice = catalogPrice(item);
+      return {
+        ...item,
+        listPrice,
+        price: bundleDiscount ? offerPrice(listPrice) : listPrice,
+      };
+    });
+    const listTotal = displayItems.reduce((sum, item) => sum + item.listPrice * item.qty, 0);
+    const total = displayItems.reduce((sum, item) => sum + item.price * item.qty, 0);
     return {
-      items,
+      items: displayItems,
       count,
       total,
+      listTotal,
+      bundleDiscount,
       open,
       setOpen,
       add: (product, brief, fromOffer = false) => {
         const id = lineId(product.id, fromOffer);
-        const price = fromOffer ? offerPrice(product.price) : product.price;
+        const price = product.price;
         setItems((current) => {
           const found = current.find((item) => item.id === id);
           if (found && !product.personalized) {
             return current.map((item) =>
               item.id === id
-                ? { ...item, qty: item.qty + 1, yampiToken: product.yampiToken, name: product.name }
+                ? {
+                    ...item,
+                    qty: item.qty + 1,
+                    yampiToken: product.yampiToken,
+                    name: product.name,
+                    price,
+                    listPrice: price,
+                  }
                 : item,
             );
           }
           if (found && product.personalized) {
             return current.map((item) =>
               item.id === id
-                ? { ...item, qty: 1, brief, personalized: true, yampiToken: product.yampiToken }
+                ? {
+                    ...item,
+                    qty: 1,
+                    brief,
+                    personalized: true,
+                    yampiToken: product.yampiToken,
+                    price,
+                    listPrice: price,
+                  }
                 : item,
             );
           }
@@ -102,7 +139,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               productId: product.id,
               name: product.name,
               price,
-              listPrice: product.price,
+              listPrice: price,
               imageUrl: product.imageUrl,
               yampiToken: product.yampiToken,
               qty: 1,
@@ -120,10 +157,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           let changed = false;
           const next = current.map((item) => {
             const product = byId.get(item.productId);
-            const token = (product?.yampiToken || item.yampiToken || "").trim();
-            if (!product || token === item.yampiToken) return item;
+            if (!product) return item;
+            const token = (product.yampiToken || item.yampiToken || "").trim();
+            if (token === item.yampiToken && product.name === item.name && product.price === catalogPrice(item)) {
+              return item;
+            }
             changed = true;
-            return { ...item, yampiToken: token, name: product.name };
+            return {
+              ...item,
+              yampiToken: token,
+              name: product.name,
+              listPrice: product.price,
+              price: product.price,
+            };
           });
           return changed ? next : current;
         });

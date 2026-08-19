@@ -60,9 +60,10 @@ export default function ConfigPage() {
           />
         </label>
         <p className="muted">
-          Crie o cupom de 15% em Marketing → Cupons na Yampi e cole o código aqui. O checkout recebe
-          <code> ?promocode= </code>
-          no link de compra, então o desconto também vale se o cliente incluir mais produtos lá.
+          Crie o cupom de 15% em Marketing → Cupons na Yampi e cole o código aqui. O link de compra só
+          aceita <code> ?promocode= </code>
+          no pedido inteiro: a Yampi não deixa informar desconto só em uma peça pela URL. Com 2 ou mais
+          itens, o site envia o cupom e mostra 15% no total.
         </p>
         <label>
           Instagram
