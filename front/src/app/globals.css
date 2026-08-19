@@ -530,6 +530,20 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   padding: 20px;
+  overflow: auto;
+}
+
+.cart-offers {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+.cart-offers h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.04em;
 }
 
 .drawer h2 {

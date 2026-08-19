@@ -44,6 +44,7 @@ export default function ProductsListPage() {
               <th>Token Yampi</th>
               <th>Ativo</th>
               <th>Personalizado</th>
+              <th>No carrinho</th>
               <th></th>
             </tr>
           </thead>
@@ -55,6 +56,7 @@ export default function ProductsListPage() {
                 <td>{product.yampiToken || "—"}</td>
                 <td>{product.active ? "sim" : "não"}</td>
                 <td>{product.personalized ? "sim" : "não"}</td>
+                <td>{product.cartOffer ? "sim" : "não"}</td>
                 <td className="row-actions">
                   <Link href={`/panel/produtos/${product.id}`}>Editar</Link>
                   <button className="btn ghost" type="button" onClick={() => remove(product.id)}>

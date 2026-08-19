@@ -16,6 +16,7 @@ export default function NewProductPage() {
   const [sortOrder, setSortOrder] = useState("0");
   const [active, setActive] = useState(true);
   const [personalized, setPersonalized] = useState(false);
+  const [cartOffer, setCartOffer] = useState(false);
   const [error, setError] = useState("");
 
   async function onSubmit(event: FormEvent) {
@@ -34,6 +35,7 @@ export default function NewProductPage() {
           sortOrder: Number(sortOrder),
           active,
           personalized,
+          cartOffer,
         }),
       });
       router.replace("/panel/produtos");
@@ -71,6 +73,12 @@ export default function NewProductPage() {
           <input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
         </label>
         <ImageField label="Imagem" value={imageUrl} onChange={setImageUrl} />
+        <label>
+          <span>
+            <input type="checkbox" checked={cartOffer} onChange={(e) => setCartOffer(e.target.checked)} />{" "}
+            Exibir no carrinho (oferta +1 com 15% off)
+          </span>
+        </label>
         <label>
           <span>
             <input type="checkbox" checked={personalized} onChange={(e) => setPersonalized(e.target.checked)} />{" "}

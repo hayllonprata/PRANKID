@@ -1,14 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { api, buildYampiCheckout, formatBRL, mediaUrl } from "@/lib/api";
+import { api, buildYampiCheckout, formatBRL, mediaUrl, offerPrice, type Product } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
+import { PersonalizeModal } from "./PersonalizeModal";
 
-export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
-  const { items, total, open, setOpen, setQty, remove } = useCart();
+export function CartDrawer({ yampiBaseUrl, products }: { yampiBaseUrl: string; products: Product[] }) {
+  const { items, total, open, setOpen, setQty, remove, add } = useCart();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<Product | null>(null);
+
+  const offers = products.filter((product) => {
+    if (!product.cartOffer) return false;
+    return !items.some((item) => item.fromOffer && item.productId === product.id);
+  });
+
+  function addOffer(product: Product) {
+    if (product.personalized) {
+      setPending(product);
+      return;
+    }
+    add(product, undefined, true);
+  }
 
   if (!open) return null;
 
@@ -43,7 +58,7 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
           method: "POST",
           body: JSON.stringify({
             items: custom.map((item) => ({
-              productId: item.id,
+              productId: item.productId || item.id,
               job: item.brief?.job,
               likes: item.brief?.likes,
               colors: item.brief?.colors,
@@ -83,6 +98,7 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
               )}
               <div>
                 <strong>{item.name}</strong>
+                {item.fromOffer ? <div className="muted">+1 com 15% off</div> : null}
                 {item.personalized ? <div className="muted">Personalizado</div> : null}
                 {item.brief?.transcript ? <p className="cart-brief">{item.brief.transcript}</p> : null}
                 {item.brief && !item.brief.transcript ? (
@@ -90,7 +106,15 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
                     {item.brief.job} · {item.brief.likes} · {item.brief.colors}
                   </p>
                 ) : null}
-                <div>{formatBRL(item.price)}</div>
+                <div>
+                  {item.fromOffer ? (
+                    <>
+                      <s className="muted">{formatBRL(item.listPrice)}</s> {formatBRL(item.price)}
+                    </>
+                  ) : (
+                    formatBRL(item.price)
+                  )}
+                </div>
                 <div className="qty">
                   <button type="button" onClick={() => setQty(item.id, item.qty - 1)}>
                     −
@@ -107,6 +131,30 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
             </div>
           ))
         )}
+        {items.length > 0 && offers.length > 0 ? (
+          <div className="cart-offers">
+            <h3>Leva +1 com 15% off</h3>
+            <p className="muted">Escolhe mais um PRANKID com desconto na vitrine.</p>
+            {offers.map((product) => (
+              <div className="cart-item" key={product.id}>
+                {mediaUrl(product.imageUrl) ? (
+                  <img src={mediaUrl(product.imageUrl)} alt="" />
+                ) : (
+                  <div className="cart-thumb" />
+                )}
+                <div>
+                  <strong>{product.name}</strong>
+                  <div>
+                    <s className="muted">{formatBRL(product.price)}</s> {formatBRL(offerPrice(product.price))}
+                  </div>
+                </div>
+                <button className="btn magenta" type="button" onClick={() => addOffer(product)}>
+                  +1
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <div className="cart-total">
           <div className="card-row">
             <span>Total da vitrine</span>
@@ -119,6 +167,16 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
           </button>
         </div>
       </aside>
+      {pending ? (
+        <PersonalizeModal
+          product={pending}
+          onCancel={() => setPending(null)}
+          onConfirm={(brief) => {
+            add(pending, brief, true);
+            setPending(null);
+          }}
+        />
+      ) : null}
     </>
   );
 }
