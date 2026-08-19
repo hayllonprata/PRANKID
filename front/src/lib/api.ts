@@ -1,9 +1,16 @@
+export type ProductImage = {
+  id: string;
+  imageUrl: string;
+  sortOrder: number;
+};
+
 export type Product = {
   id: string;
   name: string;
   description: string;
   price: number;
   imageUrl: string;
+  images?: ProductImage[];
   yampiToken: string;
   sku: string;
   active: boolean;
@@ -87,6 +94,12 @@ export function mediaUrl(path?: string | null) {
     return path;
   }
   return `${getApiUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+export function productGallery(product: Pick<Product, "imageUrl" | "images">) {
+  const urls = (product.images ?? []).map((img) => img.imageUrl).filter(Boolean);
+  if (urls.length) return [...new Set(urls)];
+  return product.imageUrl ? [product.imageUrl] : [];
 }
 
 export function getToken() {

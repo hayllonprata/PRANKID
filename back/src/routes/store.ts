@@ -5,6 +5,7 @@ import multer from "multer";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../lib/prisma.js";
 import { fillBriefFromTranscript, transcribeAudioFile } from "../lib/openai-transcribe.js";
+import { productImageInclude } from "../lib/product-images.js";
 import { publicSettings, serializeProduct } from "../lib/serialize.js";
 import { uploadDir } from "./upload.js";
 
@@ -23,6 +24,7 @@ storeRouter.get("/", async (_req, res) => {
     prisma.product.findMany({
       where: { active: true },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      include: productImageInclude,
     }),
   ]);
 

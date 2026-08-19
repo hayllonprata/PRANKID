@@ -1,5 +1,11 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import {
+  getProductWithImages,
+  parseImageUrls,
+  productImageInclude,
+  replaceProductImages,
+} from "../lib/product-images.js";
 import { serializeAdminSettings, serializeProduct } from "../lib/serialize.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -178,6 +184,7 @@ adminRouter.put("/settings", async (req, res) => {
 adminRouter.get("/products", async (_req, res) => {
   const products = await prisma.product.findMany({
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: productImageInclude,
   });
   res.json(products.map(serializeProduct));
 });
@@ -188,19 +195,24 @@ adminRouter.post("/products", async (req, res) => {
     res.status(400).json({ error: "Nome é obrigatório" });
     return;
   }
+  const urls = parseImageUrls(req.body) ?? [String(req.body?.imageUrl ?? "").trim()].filter(Boolean);
   const product = await prisma.product.create({
     data: {
       name,
       description: String(req.body?.description ?? ""),
       price: Number(req.body?.price || 0),
-      imageUrl: String(req.body?.imageUrl ?? ""),
+      imageUrl: urls[0] || "",
       yampiToken: String(req.body?.yampiToken ?? "").trim(),
       sku: String(req.body?.sku ?? "").trim(),
       active: req.body?.active !== false,
       sortOrder: Number(req.body?.sortOrder || 0),
       personalized: Boolean(req.body?.personalized),
       cartOffer: Boolean(req.body?.cartOffer),
+      images: {
+        create: urls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
+      },
     },
+    include: productImageInclude,
   });
   res.status(201).json(serializeProduct(product));
 });
@@ -212,13 +224,14 @@ adminRouter.put("/products/:id", async (req, res) => {
     res.status(404).json({ error: "Produto não encontrado" });
     return;
   }
-  const product = await prisma.product.update({
+  const urls = parseImageUrls(req.body);
+  await prisma.product.update({
     where: { id },
     data: {
       name: String(req.body?.name ?? existing.name),
       description: String(req.body?.description ?? existing.description),
       price: req.body?.price === undefined ? existing.price : Number(req.body.price),
-      imageUrl: String(req.body?.imageUrl ?? existing.imageUrl),
+      imageUrl: urls ? urls[0] || "" : String(req.body?.imageUrl ?? existing.imageUrl),
       yampiToken: String(req.body?.yampiToken ?? existing.yampiToken).trim(),
       sku: String(req.body?.sku ?? existing.sku).trim(),
       active: req.body?.active === undefined ? existing.active : Boolean(req.body.active),
@@ -227,7 +240,61 @@ adminRouter.put("/products/:id", async (req, res) => {
       cartOffer: req.body?.cartOffer === undefined ? existing.cartOffer : Boolean(req.body.cartOffer),
     },
   });
-  res.json(serializeProduct(product));
+  if (urls) await replaceProductImages(id, urls);
+  const product = await getProductWithImages(id);
+  res.json(serializeProduct(product!));
+});
+
+adminRouter.post("/products/:id/images", async (req, res) => {
+  const id = String(req.params.id);
+  const imageUrl = String(req.body?.imageUrl || "").trim();
+  if (!imageUrl) {
+    res.status(400).json({ error: "Imagem é obrigatória" });
+    return;
+  }
+  const existing = await getProductWithImages(id);
+  if (!existing) {
+    res.status(404).json({ error: "Produto não encontrado" });
+    return;
+  }
+  const sortOrder = existing.images.reduce((max, img) => Math.max(max, img.sortOrder), -1) + 1;
+  await prisma.productImage.create({
+    data: { productId: id, imageUrl, sortOrder },
+  });
+  if (!existing.imageUrl) {
+    await prisma.product.update({ where: { id }, data: { imageUrl } });
+  }
+  const product = await getProductWithImages(id);
+  res.status(201).json(serializeProduct(product!));
+});
+
+adminRouter.delete("/products/:id/images/:imageId", async (req, res) => {
+  const id = String(req.params.id);
+  const imageId = String(req.params.imageId);
+  const existing = await getProductWithImages(id);
+  if (!existing) {
+    res.status(404).json({ error: "Produto não encontrado" });
+    return;
+  }
+  const photo = existing.images.find((img) => img.id === imageId);
+  if (!photo) {
+    if (imageId.startsWith("legacy-") && existing.imageUrl) {
+      await prisma.product.update({ where: { id }, data: { imageUrl: existing.images[0]?.imageUrl || "" } });
+      const product = await getProductWithImages(id);
+      res.json(serializeProduct(product!));
+      return;
+    }
+    res.status(404).json({ error: "Imagem não encontrada" });
+    return;
+  }
+  await prisma.productImage.delete({ where: { id: imageId } });
+  const remaining = existing.images.filter((img) => img.id !== imageId);
+  await prisma.product.update({
+    where: { id },
+    data: { imageUrl: remaining[0]?.imageUrl || "" },
+  });
+  const product = await getProductWithImages(id);
+  res.json(serializeProduct(product!));
 });
 
 adminRouter.delete("/products/:id", async (req, res) => {

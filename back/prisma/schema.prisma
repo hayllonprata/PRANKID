@@ -53,19 +53,31 @@ model LegendBeat {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String   @default("")
-  price       Decimal  @db.Decimal(10, 2)
-  imageUrl    String   @default("")
-  yampiToken  String   @default("")
-  sku         String   @default("")
-  active      Boolean  @default(true)
-  sortOrder    Int      @default(0)
-  personalized Boolean  @default(false)
-  cartOffer    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           String         @id @default(cuid())
+  name         String
+  description  String         @default("")
+  price        Decimal        @db.Decimal(10, 2)
+  imageUrl     String         @default("")
+  yampiToken   String         @default("")
+  sku          String         @default("")
+  active       Boolean        @default(true)
+  sortOrder    Int            @default(0)
+  personalized Boolean        @default(false)
+  cartOffer    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  images       ProductImage[]
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
 }
 
 model CustomBrief {

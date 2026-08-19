@@ -58,8 +58,10 @@ export default function ProductsListPage() {
                 <td>{product.personalized ? "sim" : "não"}</td>
                 <td>{product.cartOffer ? "sim" : "não"}</td>
                 <td className="row-actions">
-                  <Link href={`/panel/produtos/${product.id}`}>Editar</Link>
-                  <button className="btn ghost" type="button" onClick={() => remove(product.id)}>
+                  <Link className="btn sm" href={`/panel/produtos/${product.id}`}>
+                    Editar
+                  </Link>
+                  <button className="btn sm magenta" type="button" onClick={() => remove(product.id)}>
                     Excluir
                   </button>
                 </td>

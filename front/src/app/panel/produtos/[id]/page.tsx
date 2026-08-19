@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api, type Product } from "@/lib/api";
-import { ImageField } from "@/components/panel/ImageField";
+import { ProductImagesField } from "@/components/panel/ProductImagesField";
 
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
@@ -30,7 +30,7 @@ export default function EditProductPage() {
     try {
       const saved = await api<Product>(`/api/admin/products/${product.id}`, {
         method: "PUT",
-        body: JSON.stringify(product),
+        body: JSON.stringify({ ...product, images: undefined }),
       });
       setProduct(saved);
       setMsg("Produto salvo.");
@@ -79,10 +79,21 @@ export default function EditProductPage() {
             onChange={(e) => setProduct({ ...product, sortOrder: Number(e.target.value) })}
           />
         </label>
-        <ImageField
-          label="Imagem"
-          value={product.imageUrl}
-          onChange={(imageUrl) => setProduct({ ...product, imageUrl })}
+        <ProductImagesField
+          images={product.images ?? []}
+          onUpload={async (imageUrl) => {
+            const saved = await api<Product>(`/api/admin/products/${product.id}/images`, {
+              method: "POST",
+              body: JSON.stringify({ imageUrl }),
+            });
+            setProduct(saved);
+          }}
+          onRemove={async (image) => {
+            const saved = await api<Product>(`/api/admin/products/${product.id}/images/${image.id}`, {
+              method: "DELETE",
+            });
+            setProduct(saved);
+          }}
         />
         <label>
           <span>

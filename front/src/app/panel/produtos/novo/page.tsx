@@ -2,15 +2,15 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
-import { ImageField } from "@/components/panel/ImageField";
+import { api, type ProductImage } from "@/lib/api";
+import { ProductImagesField } from "@/components/panel/ProductImagesField";
 
 export default function NewProductPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("0");
-  const [imageUrl, setImageUrl] = useState("");
+  const [images, setImages] = useState<ProductImage[]>([]);
   const [yampiToken, setYampiToken] = useState("");
   const [sku, setSku] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
@@ -29,7 +29,8 @@ export default function NewProductPage() {
           name,
           description,
           price: Number(price),
-          imageUrl,
+          imageUrl: images[0]?.imageUrl || "",
+          images: images.map((img) => img.imageUrl),
           yampiToken,
           sku,
           sortOrder: Number(sortOrder),
@@ -72,7 +73,7 @@ export default function NewProductPage() {
           Ordem
           <input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
         </label>
-        <ImageField label="Imagem" value={imageUrl} onChange={setImageUrl} />
+        <ProductImagesField images={images} onChange={setImages} />
         <label>
           <span>
             <input type="checkbox" checked={cartOffer} onChange={(e) => setCartOffer(e.target.checked)} />{" "}

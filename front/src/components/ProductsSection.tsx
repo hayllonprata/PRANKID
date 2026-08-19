@@ -1,33 +1,45 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatBRL, mediaUrl, type Product } from "@/lib/api";
+import { formatBRL, mediaUrl, productGallery, type Product } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
+import { ProductZoomModal } from "./ProductZoomModal";
 
 const PAGE_SIZE = 3;
 
 function ProductCard({
   product,
   onSelect,
+  onOpen,
 }: {
   product: Product;
   onSelect: (product: Product) => void;
+  onOpen: (product: Product) => void;
 }) {
-  const src = mediaUrl(product.imageUrl);
+  const photos = productGallery(product);
+  const src = mediaUrl(photos[0] || product.imageUrl);
   return (
-    <article className="card">
+    <article className="card product-card" onClick={() => onOpen(product)}>
       <div className="card-media">
         {src ? <img src={src} alt={product.name} /> : <div className="placeholder-toy" />}
         {product.personalized ? <span className="card-tag">Personalizado</span> : null}
+        {photos.length > 1 ? <span className="card-photos">{photos.length} fotos</span> : null}
       </div>
       <div className="card-body">
         <h3>{product.name}</h3>
         <p>{product.description}</p>
         <div className="card-row">
           <span className="price">{formatBRL(product.price)}</span>
-          <button className="btn magenta" type="button" onClick={() => onSelect(product)}>
+          <button
+            className="btn magenta"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelect(product);
+            }}
+          >
             {product.personalized ? "Personalizar" : "Adicionar"}
           </button>
         </div>
@@ -39,6 +51,7 @@ function ProductCard({
 export function ProductsSection({ products }: { products: Product[] }) {
   const { add } = useCart();
   const [pending, setPending] = useState<Product | null>(null);
+  const [zoomed, setZoomed] = useState<Product | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(true);
@@ -117,7 +130,7 @@ export function ProductsSection({ products }: { products: Product[] }) {
         ) : isMobile ? (
           <div className="grid-products">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} onSelect={handleSelect} />
+              <ProductCard key={product.id} product={product} onSelect={handleSelect} onOpen={setZoomed} />
             ))}
           </div>
         ) : (
@@ -160,6 +173,7 @@ export function ProductsSection({ products }: { products: Product[] }) {
                           key={`${slideIndex}-${product.id}`}
                           product={product}
                           onSelect={handleSelect}
+                          onOpen={setZoomed}
                         />
                       ))}
                     </div>
@@ -193,6 +207,7 @@ export function ProductsSection({ products }: { products: Product[] }) {
           </>
         )}
       </div>
+      {zoomed ? <ProductZoomModal product={zoomed} onClose={() => setZoomed(null)} /> : null}
       {pending ? (
         <PersonalizeModal
           product={pending}
