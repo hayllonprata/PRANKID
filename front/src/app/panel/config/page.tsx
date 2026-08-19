@@ -56,7 +56,7 @@ export default function ConfigPage() {
           <input
             value={settings.instagram}
             onChange={(e) => setSettings({ ...settings, instagram: e.target.value })}
-            placeholder="@prankid"
+            placeholder="@prankid_world"
           />
         </label>
         <label>

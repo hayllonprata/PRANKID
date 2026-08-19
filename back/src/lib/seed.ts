@@ -26,9 +26,14 @@ export async function seedIfNeeded() {
       id: "default",
       whatsapp: "",
       yampiBaseUrl: "",
-      instagram: "",
+      instagram: siteCopy.instagram,
       footer: siteCopy.footer,
     },
+  });
+
+  await prisma.settings.updateMany({
+    where: { id: "default", instagram: "" },
+    data: { instagram: siteCopy.instagram },
   });
 
   await prisma.hero.upsert({
