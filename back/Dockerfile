@@ -23,4 +23,4 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 RUN mkdir -p /app/uploads
 EXPOSE 4000
 ENV PORT=4000
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "export DATABASE_URL=\"$(node dist/normalize-database-url.js)\" && npx prisma migrate deploy && node dist/index.js"]
