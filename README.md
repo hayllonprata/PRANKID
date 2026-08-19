@@ -50,7 +50,9 @@ Crie **dois App services** no mesmo repositório, branch `main`.
 - Porta: `4000`
 - Volume persistente: `/app/uploads`
 - Variáveis:
-  - `DATABASE_URL`
+  - `DATABASE_URL` — cole **sem aspas**, com nome do banco depois da porta:
+    `postgresql://USER:SENHA@HOST:PORTA/BANCO?sslmode=disable`
+    (se colar `"postgresql://..."` o Prisma quebra com P1013 / porta inválida)
   - `JWT_SECRET`
   - `ADMIN_EMAIL`
   - `ADMIN_PASSWORD`
