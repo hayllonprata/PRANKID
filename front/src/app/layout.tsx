@@ -5,6 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PRANKID — Toy art",
   description: "Toy art com personalidade. Coleção PRANKID.",
+  icons: { icon: "/favicon.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
