@@ -5,7 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "PRANKID — Toy art",
   description: "Toy art com personalidade. Coleção PRANKID.",
-  icons: { icon: "/logo.webp" },
+  icons: {
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
