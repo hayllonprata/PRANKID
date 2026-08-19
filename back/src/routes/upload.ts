@@ -23,24 +23,13 @@ const upload = multer({
   },
 });
 
-function extFromMime(mime: string) {
-  if (mime === "image/jpeg") return ".jpg";
-  if (mime === "image/png") return ".png";
-  if (mime === "image/webp") return ".webp";
-  if (mime === "image/gif") return ".gif";
-  return ".bin";
-}
-
-async function saveOriginal(file: Express.Multer.File) {
-  const filename = `${randomUUID()}${extFromMime(file.mimetype)}`;
-  await fs.promises.writeFile(path.join(uploadDir, filename), file.buffer);
-  return filename;
-}
-
 async function saveAsWebp(file: Express.Multer.File) {
   const filename = `${randomUUID()}.webp`;
-  await sharp(file.buffer)
-    .rotate()
+  const meta = await sharp(file.buffer, { animated: true, failOn: "none" }).metadata();
+  const animated = (meta.pages ?? 1) > 1;
+  let pipeline = sharp(file.buffer, { animated, failOn: "none" });
+  if (!animated) pipeline = pipeline.rotate();
+  await pipeline
     .resize({
       width: 1920,
       height: 1920,
@@ -55,8 +44,7 @@ async function saveAsWebp(file: Express.Multer.File) {
 export const uploadRouter = Router();
 
 async function persistUpload(file: Express.Multer.File) {
-  const keepOriginal = file.mimetype === "image/gif";
-  const filename = keepOriginal ? await saveOriginal(file) : await saveAsWebp(file);
+  const filename = await saveAsWebp(file);
   return `/uploads/${filename}`;
 }
 

@@ -82,7 +82,7 @@ export function ProductImagesField({
           }}
         />
         <span className="muted">
-          Selecione uma ou várias fotos. JPG, PNG e WEBP são convertidos para WEBP para ficar mais leve.
+          Selecione uma ou várias fotos. JPG, PNG, GIF e WEBP são convertidos para WEBP para ficar mais leve.
         </span>
         {progress ? <span>{progress}</span> : null}
         {error ? <span className="msg err">{error}</span> : null}
