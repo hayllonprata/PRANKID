@@ -151,7 +151,7 @@ export function PersonalizeModal({
           <div className="row-actions">
             {recording ? (
               <button className="btn magenta" type="button" onClick={stopRecording}>
-                Parar gravação
+                ENVIAR AUDIO
               </button>
             ) : (
               <button className="btn" type="button" onClick={startRecording} disabled={busy}>
@@ -159,17 +159,11 @@ export function PersonalizeModal({
               </button>
             )}
             <label className="btn ghost" style={{ cursor: "pointer" }}>
-              Enviar áudio
+              Enviar arquivo
               <input type="file" accept="audio/*,video/webm" hidden onChange={(e) => onFile(e.target.files?.[0])} />
             </label>
           </div>
           {busy ? <p className="muted">Transcrevendo e preenchendo os campos...</p> : null}
-          {transcript ? (
-            <label>
-              Transcrição (pode editar)
-              <textarea value={transcript} onChange={(e) => setTranscript(e.target.value)} />
-            </label>
-          ) : null}
         </div>
         <form className="form-grid" onSubmit={onSubmit}>
           <label>
