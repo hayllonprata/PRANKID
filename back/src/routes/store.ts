@@ -29,3 +29,46 @@ storeRouter.get("/", async (_req, res) => {
     products: products.map(serializeProduct),
   });
 });
+
+function clip(value: unknown, max = 1200) {
+  return String(value ?? "").trim().slice(0, max);
+}
+
+storeRouter.post("/customizations", async (req, res) => {
+  const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
+  if (!rawItems.length) {
+    res.status(400).json({ error: "Nenhum briefing enviado" });
+    return;
+  }
+
+  const saved = [];
+  for (const item of rawItems) {
+    const productId = String(item?.productId || "");
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product?.personalized || !product.active) {
+      res.status(400).json({ error: "Produto personalizado inválido" });
+      return;
+    }
+    const job = clip(item.job);
+    const likes = clip(item.likes);
+    const colors = clip(item.colors);
+    if (!job || !likes || !colors) {
+      res.status(400).json({ error: "Preencha o que você faz, do que gosta e as cores" });
+      return;
+    }
+    saved.push(
+      await prisma.customBrief.create({
+        data: {
+          productId: product.id,
+          productName: product.name,
+          job,
+          likes,
+          colors,
+          qty: Math.max(1, Number(item.qty || 1)),
+        },
+      }),
+    );
+  }
+
+  res.status(201).json({ ok: true, count: saved.length });
+});

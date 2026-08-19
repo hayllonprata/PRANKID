@@ -317,6 +317,20 @@ img { max-width: 100%; display: block; }
   object-fit: cover;
 }
 
+.card-tag {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background: var(--yellow);
+  color: #111;
+  border: 2px solid #000;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+}
+
 .placeholder-toy {
   width: 120px;
   height: 160px;
@@ -522,6 +536,18 @@ img { max-width: 100%; display: block; }
   font-family: var(--font-display);
   font-size: 42px;
   margin: 0 0 16px;
+}
+
+.personalize-drawer {
+  width: min(480px, 100%);
+  overflow: auto;
+}
+
+.cart-brief {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 6px 0;
 }
 
 .cart-item {

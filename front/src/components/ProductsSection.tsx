@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { formatBRL, mediaUrl, type Product } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
+import { PersonalizeModal } from "./PersonalizeModal";
 
 export function ProductsSection({ products }: { products: Product[] }) {
   const { add } = useCart();
+  const [pending, setPending] = useState<Product | null>(null);
+
   return (
     <section className="section" id="produtos">
       <div className="wrap">
@@ -25,14 +29,19 @@ export function ProductsSection({ products }: { products: Product[] }) {
                 <article className="card" key={product.id}>
                   <div className="card-media">
                     {src ? <img src={src} alt={product.name} /> : <div className="placeholder-toy" />}
+                    {product.personalized ? <span className="card-tag">Personalizado</span> : null}
                   </div>
                   <div className="card-body">
                     <h3>{product.name}</h3>
                     <p>{product.description}</p>
                     <div className="card-row">
                       <span className="price">{formatBRL(product.price)}</span>
-                      <button className="btn magenta" type="button" onClick={() => add(product)}>
-                        Adicionar
+                      <button
+                        className="btn magenta"
+                        type="button"
+                        onClick={() => (product.personalized ? setPending(product) : add(product))}
+                      >
+                        {product.personalized ? "Personalizar" : "Adicionar"}
                       </button>
                     </div>
                   </div>
@@ -42,6 +51,16 @@ export function ProductsSection({ products }: { products: Product[] }) {
           </div>
         )}
       </div>
+      {pending ? (
+        <PersonalizeModal
+          product={pending}
+          onCancel={() => setPending(null)}
+          onConfirm={(brief) => {
+            add(pending, brief);
+            setPending(null);
+          }}
+        />
+      ) : null}
     </section>
   );
 }

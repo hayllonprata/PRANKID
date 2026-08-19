@@ -61,8 +61,20 @@ model Product {
   sku         String   @default("")
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)
+  personalized Boolean @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model CustomBrief {
+  id          String   @id @default(cuid())
+  productId   String
+  productName String
+  job         String
+  likes       String
+  colors      String
+  qty         Int      @default(1)
+  createdAt   DateTime @default(now())
 }
 
 model CrewShot {

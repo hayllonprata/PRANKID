@@ -8,6 +8,7 @@ export type Product = {
   sku: string;
   active: boolean;
   sortOrder: number;
+  personalized: boolean;
 };
 
 export type Hero = {
@@ -32,6 +33,12 @@ export type LegendBeat = {
   title: string;
   caption: string;
   imageUrl: string;
+};
+
+export type PersonalBrief = {
+  job: string;
+  likes: string;
+  colors: string;
 };
 
 export type CrewShot = {

@@ -15,6 +15,7 @@ export default function NewProductPage() {
   const [sku, setSku] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
   const [active, setActive] = useState(true);
+  const [personalized, setPersonalized] = useState(false);
   const [error, setError] = useState("");
 
   async function onSubmit(event: FormEvent) {
@@ -32,6 +33,7 @@ export default function NewProductPage() {
           sku,
           sortOrder: Number(sortOrder),
           active,
+          personalized,
         }),
       });
       router.replace("/panel/produtos");
@@ -69,6 +71,12 @@ export default function NewProductPage() {
           <input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
         </label>
         <ImageField label="Imagem" value={imageUrl} onChange={setImageUrl} />
+        <label>
+          <span>
+            <input type="checkbox" checked={personalized} onChange={(e) => setPersonalized(e.target.checked)} />{" "}
+            Produto personalizado (pede briefing na compra)
+          </span>
+        </label>
         <label>
           <span>
             <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Ativo
