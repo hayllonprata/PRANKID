@@ -81,10 +81,10 @@ export default function EditProductPage() {
         </label>
         <ProductImagesField
           images={product.images ?? []}
-          onUpload={async (imageUrl) => {
+          onUpload={async (imageUrls) => {
             const saved = await api<Product>(`/api/admin/products/${product.id}/images`, {
               method: "POST",
-              body: JSON.stringify({ imageUrl }),
+              body: JSON.stringify({ imageUrls }),
             });
             setProduct(saved);
           }}

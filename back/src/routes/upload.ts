@@ -54,21 +54,30 @@ async function saveAsWebp(file: Express.Multer.File) {
 
 export const uploadRouter = Router();
 
+async function persistUpload(file: Express.Multer.File) {
+  const keepOriginal = file.mimetype === "image/gif";
+  const filename = keepOriginal ? await saveOriginal(file) : await saveAsWebp(file);
+  return `/uploads/${filename}`;
+}
+
 uploadRouter.post("/", requireAuth, (req, res) => {
-  upload.single("file")(req, res, async (err) => {
+  upload.array("file", 24)(req, res, async (err) => {
     if (err) {
       res.status(400).json({ error: err.message || "Falha no upload" });
       return;
     }
-    if (!req.file) {
+    const files = Array.isArray(req.files) ? req.files : [];
+    if (!files.length) {
       res.status(400).json({ error: "Arquivo obrigatório" });
       return;
     }
 
     try {
-      const keepOriginal = req.file.mimetype === "image/gif";
-      const filename = keepOriginal ? await saveOriginal(req.file) : await saveAsWebp(req.file);
-      res.json({ url: `/uploads/${filename}` });
+      const urls: string[] = [];
+      for (const file of files) {
+        urls.push(await persistUpload(file));
+      }
+      res.json({ url: urls[0], urls });
     } catch (error) {
       console.error(error);
       res.status(400).json({ error: "Não foi possível converter a imagem para WEBP" });

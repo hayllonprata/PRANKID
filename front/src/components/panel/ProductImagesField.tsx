@@ -11,31 +11,42 @@ export function ProductImagesField({
 }: {
   images: ProductImage[];
   onChange?: (images: ProductImage[]) => void;
-  onUpload?: (url: string) => Promise<void> | void;
+  onUpload?: (urls: string[]) => Promise<void> | void;
   onRemove?: (image: ProductImage) => Promise<void> | void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
 
-  async function onFile(file?: File) {
-    if (!file) return;
+  async function onFiles(fileList?: FileList | null) {
+    const files = [...(fileList || [])];
+    if (!files.length) return;
     setBusy(true);
     setError("");
+    setProgress(files.length > 1 ? `Enviando 0/${files.length}...` : "Enviando...");
     try {
       const body = new FormData();
-      body.append("file", file);
-      const result = await api<{ url: string }>("/api/upload", { method: "POST", body });
-      if (onUpload) await onUpload(result.url);
+      for (const file of files) body.append("file", file);
+      const result = await api<{ url: string; urls?: string[] }>("/api/upload", { method: "POST", body });
+      const urls = result.urls?.length ? result.urls : result.url ? [result.url] : [];
+      setProgress(files.length > 1 ? `Enviando ${urls.length}/${files.length}...` : "Enviando...");
+      if (!urls.length) throw new Error("Falha no upload");
+      if (onUpload) await onUpload(urls);
       else {
         onChange?.([
           ...images,
-          { id: `local-${Date.now()}`, imageUrl: result.url, sortOrder: images.length },
+          ...urls.map((imageUrl, index) => ({
+            id: `local-${Date.now()}-${index}`,
+            imageUrl,
+            sortOrder: images.length + index,
+          })),
         ]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha no upload");
     } finally {
       setBusy(false);
+      setProgress("");
     }
   }
 
@@ -60,14 +71,17 @@ export function ProductImagesField({
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
+          multiple
           disabled={busy}
           onChange={(e) => {
-            onFile(e.target.files?.[0]);
+            onFiles(e.target.files);
             e.target.value = "";
           }}
         />
-        <span className="muted">JPG, PNG e WEBP são convertidos para WEBP para ficar mais leve.</span>
-        {busy ? <span>Enviando...</span> : null}
+        <span className="muted">
+          Selecione uma ou várias fotos. JPG, PNG e WEBP são convertidos para WEBP para ficar mais leve.
+        </span>
+        {busy ? <span>{progress || "Enviando..."}</span> : null}
         {error ? <span className="msg err">{error}</span> : null}
       </label>
       {images.length ? (

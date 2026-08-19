@@ -247,8 +247,14 @@ adminRouter.put("/products/:id", async (req, res) => {
 
 adminRouter.post("/products/:id/images", async (req, res) => {
   const id = String(req.params.id);
-  const imageUrl = String(req.body?.imageUrl || "").trim();
-  if (!imageUrl) {
+  const urls = [
+    String(req.body?.imageUrl || "").trim(),
+    ...(Array.isArray(req.body?.imageUrls) ? req.body.imageUrls : []),
+  ]
+    .map((url) => String(url || "").trim())
+    .filter(Boolean);
+  const uniqueUrls = [...new Set(urls)];
+  if (!uniqueUrls.length) {
     res.status(400).json({ error: "Imagem é obrigatória" });
     return;
   }
@@ -257,12 +263,12 @@ adminRouter.post("/products/:id/images", async (req, res) => {
     res.status(404).json({ error: "Produto não encontrado" });
     return;
   }
-  const sortOrder = existing.images.reduce((max, img) => Math.max(max, img.sortOrder), -1) + 1;
-  await prisma.productImage.create({
-    data: { productId: id, imageUrl, sortOrder },
+  let sortOrder = existing.images.reduce((max, img) => Math.max(max, img.sortOrder), -1) + 1;
+  await prisma.productImage.createMany({
+    data: uniqueUrls.map((imageUrl) => ({ productId: id, imageUrl, sortOrder: sortOrder++ })),
   });
   if (!existing.imageUrl) {
-    await prisma.product.update({ where: { id }, data: { imageUrl } });
+    await prisma.product.update({ where: { id }, data: { imageUrl: uniqueUrls[0] } });
   }
   const product = await getProductWithImages(id);
   res.status(201).json(serializeProduct(product!));
