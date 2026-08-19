@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import type { PersonalBrief, Product } from "@/lib/api";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { api, type PersonalBrief, type Product } from "@/lib/api";
 
 export function PersonalizeModal({
   product,
@@ -15,15 +15,82 @@ export function PersonalizeModal({
   const [job, setJob] = useState("");
   const [likes, setLikes] = useState("");
   const [colors, setColors] = useState("");
+  const [transcript, setTranscript] = useState("");
+  const [audioUrl, setAudioUrl] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    return () => {
+      recorderRef.current?.stream.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  async function transcribeBlob(blob: Blob, filename: string) {
+    setBusy(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("audio", blob, filename);
+      const result = await api<{ text: string; audioUrl: string }>("/api/store/transcribe", { method: "POST", body });
+      setTranscript(result.text);
+      setAudioUrl(result.audioUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao transcrever o áudio");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function startRecording() {
+    setError("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        transcribeBlob(blob, "briefing.webm");
+      };
+      recorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setError("Não foi possível usar o microfone. Você pode enviar um arquivo de áudio.");
+    }
+  }
+
+  function stopRecording() {
+    recorderRef.current?.stop();
+    setRecording(false);
+  }
+
+  function onFile(file?: File) {
+    if (!file) return;
+    transcribeBlob(file, file.name || "briefing.webm");
+  }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!job.trim() || !likes.trim() || !colors.trim()) {
-      setError("Preencha os três campos para o artista ler a sua essência.");
+    const typed = job.trim() && likes.trim() && colors.trim();
+    if (!typed && !transcript.trim()) {
+      setError("Escreva os três campos ou envie um áudio.");
       return;
     }
-    onConfirm({ job: job.trim(), likes: likes.trim(), colors: colors.trim() });
+    onConfirm({
+      job: job.trim(),
+      likes: likes.trim(),
+      colors: colors.trim(),
+      transcript: transcript.trim(),
+      audioUrl,
+    });
   }
 
   return (
@@ -37,8 +104,33 @@ export function PersonalizeModal({
           </button>
         </div>
         <p className="muted">
-          Peça personalizada. Conta um pouco de você para o Dan transferir a sua essência para o {product.name}.
+          Peça personalizada. Escreva ou grave um áudio para o Dan transferir a sua essência para o {product.name}.
         </p>
+        <div className="form-grid" style={{ marginBottom: 16 }}>
+          <p className="muted">Não quer digitar? Fale sobre o que você faz, do que gosta e as cores do seu PRANKID.</p>
+          <div className="row-actions">
+            {recording ? (
+              <button className="btn magenta" type="button" onClick={stopRecording}>
+                Parar gravação
+              </button>
+            ) : (
+              <button className="btn" type="button" onClick={startRecording} disabled={busy}>
+                Gravar áudio
+              </button>
+            )}
+            <label className="btn ghost" style={{ cursor: "pointer" }}>
+              Enviar áudio
+              <input type="file" accept="audio/*,video/webm" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+            </label>
+          </div>
+          {busy ? <p className="muted">Transcrevendo com a OpenAI...</p> : null}
+          {transcript ? (
+            <label>
+              Transcrição (pode editar)
+              <textarea value={transcript} onChange={(e) => setTranscript(e.target.value)} />
+            </label>
+          ) : null}
+        </div>
         <form className="form-grid" onSubmit={onSubmit}>
           <label>
             O que você faz?
@@ -53,7 +145,7 @@ export function PersonalizeModal({
             <textarea value={colors} onChange={(e) => setColors(e.target.value)} placeholder="Amarelo, preto, magenta..." />
           </label>
           {error ? <p className="cart-error">{error}</p> : null}
-          <button className="btn full" type="submit">
+          <button className="btn full" type="submit" disabled={busy}>
             Continuar a compra
           </button>
         </form>

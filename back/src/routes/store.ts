@@ -1,6 +1,12 @@
 import { Router } from "express";
+import fs from "node:fs";
+import path from "node:path";
+import multer from "multer";
+import { randomUUID } from "node:crypto";
 import { prisma } from "../lib/prisma.js";
+import { transcribeAudioFile } from "../lib/openai-transcribe.js";
 import { publicSettings, serializeProduct } from "../lib/serialize.js";
+import { uploadDir } from "./upload.js";
 
 export const storeRouter = Router();
 
@@ -30,9 +36,72 @@ storeRouter.get("/", async (_req, res) => {
   });
 });
 
-function clip(value: unknown, max = 1200) {
+function clip(value: unknown, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
 }
+
+const audioTypes = new Set([
+  "audio/webm",
+  "audio/ogg",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/mp4",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/m4a",
+  "audio/x-m4a",
+  "video/webm",
+]);
+
+const audioUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, uploadDir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname || "").toLowerCase() || ".webm";
+      cb(null, `${randomUUID()}${ext}`);
+    },
+  }),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!audioTypes.has(file.mimetype) && !file.mimetype.startsWith("audio/")) {
+      cb(new Error("Envie um áudio (webm, mp3, wav ou m4a)"));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+storeRouter.post("/transcribe", (req, res) => {
+  audioUpload.single("audio")(req, res, async (err) => {
+    if (err) {
+      res.status(400).json({ error: err.message || "Falha no áudio" });
+      return;
+    }
+    if (!req.file) {
+      res.status(400).json({ error: "Áudio obrigatório" });
+      return;
+    }
+    try {
+      const settings = await prisma.settings.findUnique({ where: { id: "default" } });
+      const apiKey = settings?.openaiApiKey?.trim();
+      if (!apiKey) {
+        res.status(400).json({ error: "A transcrição ainda não foi configurada. Peça para o painel gravar a chave da OpenAI." });
+        return;
+      }
+      const text = await transcribeAudioFile(
+        apiKey,
+        req.file.path,
+        req.file.filename,
+        req.file.mimetype,
+      );
+      res.json({ text, audioUrl: `/uploads/${req.file.filename}` });
+    } catch (error) {
+      if (req.file?.path) fs.unlink(req.file.path, () => undefined);
+      const message = error instanceof Error ? error.message : "Falha ao transcrever";
+      res.status(400).json({ error: message });
+    }
+  });
+});
 
 storeRouter.post("/customizations", async (req, res) => {
   const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
@@ -52,8 +121,10 @@ storeRouter.post("/customizations", async (req, res) => {
     const job = clip(item.job);
     const likes = clip(item.likes);
     const colors = clip(item.colors);
-    if (!job || !likes || !colors) {
-      res.status(400).json({ error: "Preencha o que você faz, do que gosta e as cores" });
+    const transcript = clip(item.transcript, 8000);
+    const audioUrl = clip(item.audioUrl, 400);
+    if ((!job || !likes || !colors) && !transcript) {
+      res.status(400).json({ error: "Escreva o briefing ou envie um áudio transcrito" });
       return;
     }
     saved.push(
@@ -64,6 +135,8 @@ storeRouter.post("/customizations", async (req, res) => {
           job,
           likes,
           colors,
+          transcript,
+          audioUrl,
           qty: Math.max(1, Number(item.qty || 1)),
         },
       }),

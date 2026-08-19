@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, mediaUrl } from "@/lib/api";
 
 type Brief = {
   id: string;
@@ -9,6 +9,8 @@ type Brief = {
   job: string;
   likes: string;
   colors: string;
+  transcript: string;
+  audioUrl: string;
   qty: number;
   createdAt: string;
 };
@@ -42,8 +44,20 @@ export default function CustomizationsPage() {
             <strong>Do que gosta:</strong> {brief.likes}
           </p>
           <p>
-            <strong>Cores:</strong> {brief.colors}
+            <strong>Cores:</strong> {brief.colors || "—"}
           </p>
+          {brief.transcript ? (
+            <p>
+              <strong>Áudio transcrito:</strong> {brief.transcript}
+            </p>
+          ) : null}
+          {brief.audioUrl ? (
+            <p>
+              <a href={mediaUrl(brief.audioUrl)} target="_blank" rel="noreferrer">
+                Ouvir áudio original
+              </a>
+            </p>
+          ) : null}
         </article>
       ))}
     </>

@@ -28,9 +28,12 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
       return;
     }
     const custom = items.filter((item) => item.personalized);
-    const incomplete = custom.filter((item) => !item.brief?.job || !item.brief?.likes || !item.brief?.colors);
+    const incomplete = custom.filter((item) => {
+      const typed = item.brief?.job && item.brief?.likes && item.brief?.colors;
+      return !typed && !item.brief?.transcript;
+    });
     if (incomplete.length) {
-      setError("Preencha o briefing das peças personalizadas antes de finalizar.");
+      setError("Escreva o briefing ou grave um áudio nas peças personalizadas.");
       return;
     }
     setBusy(true);
@@ -44,6 +47,8 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
               job: item.brief?.job,
               likes: item.brief?.likes,
               colors: item.brief?.colors,
+              transcript: item.brief?.transcript,
+              audioUrl: item.brief?.audioUrl,
               qty: item.qty,
             })),
           }),
@@ -79,7 +84,8 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
               <div>
                 <strong>{item.name}</strong>
                 {item.personalized ? <div className="muted">Personalizado</div> : null}
-                {item.brief ? (
+                {item.brief?.transcript ? <p className="cart-brief">{item.brief.transcript}</p> : null}
+                {item.brief && !item.brief.transcript ? (
                   <p className="cart-brief">
                     {item.brief.job} · {item.brief.likes} · {item.brief.colors}
                   </p>

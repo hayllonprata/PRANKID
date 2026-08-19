@@ -60,6 +60,17 @@ export default function ConfigPage() {
           />
         </label>
         <label>
+          Chave API da OpenAI
+          <input
+            type="password"
+            autoComplete="off"
+            value={settings.openaiApiKey || ""}
+            onChange={(e) => setSettings({ ...settings, openaiApiKey: e.target.value })}
+            placeholder={settings.hasOpenaiKey ? "Chave já salva. Cole outra só se quiser trocar." : "sk-..."}
+          />
+        </label>
+        <p className="muted">Usada para transcrever o áudio do briefing personalizado (Whisper).</p>
+        <label>
           Texto do rodapé
           <textarea value={settings.footer} onChange={(e) => setSettings({ ...settings, footer: e.target.value })} />
         </label>
