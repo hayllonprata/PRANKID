@@ -1,16 +1,19 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import type { PersonalBrief, Product } from "@/lib/api";
+import { offerPrice, type PersonalBrief, type Product } from "@/lib/api";
 
 export type CartItem = {
   id: string;
+  productId: string;
   name: string;
   price: number;
+  listPrice: number;
   imageUrl: string;
   yampiToken: string;
   qty: number;
   personalized: boolean;
+  fromOffer: boolean;
   brief?: PersonalBrief;
 };
 
@@ -20,7 +23,7 @@ type CartContextValue = {
   total: number;
   open: boolean;
   setOpen: (open: boolean) => void;
-  add: (product: Product, brief?: PersonalBrief) => void;
+  add: (product: Product, brief?: PersonalBrief, fromOffer?: boolean) => void;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
   clear: () => void;
@@ -28,6 +31,10 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "prankid_cart";
+
+function lineId(productId: string, fromOffer: boolean) {
+  return fromOffer ? `${productId}__offer` : productId;
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -37,7 +44,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw) as CartItem[]);
+      if (raw) {
+        const parsed = JSON.parse(raw) as CartItem[];
+        setItems(
+          parsed.map((item) => ({
+            ...item,
+            productId: item.productId || item.id.replace(/__offer$/, ""),
+            listPrice: item.listPrice || item.price,
+            fromOffer: Boolean(item.fromOffer),
+          })),
+        );
+      }
     } catch {
       setItems([]);
     }
@@ -58,29 +75,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       total,
       open,
       setOpen,
-      add: (product, brief) => {
+      add: (product, brief, fromOffer = false) => {
+        const id = lineId(product.id, fromOffer);
+        const price = fromOffer ? offerPrice(product.price) : product.price;
         setItems((current) => {
-          const found = current.find((item) => item.id === product.id);
+          const found = current.find((item) => item.id === id);
           if (found && !product.personalized) {
-            return current.map((item) =>
-              item.id === product.id ? { ...item, qty: item.qty + 1 } : item,
-            );
+            return current.map((item) => (item.id === id ? { ...item, qty: item.qty + 1 } : item));
           }
           if (found && product.personalized) {
             return current.map((item) =>
-              item.id === product.id ? { ...item, qty: 1, brief, personalized: true } : item,
+              item.id === id ? { ...item, qty: 1, brief, personalized: true } : item,
             );
           }
           return [
             ...current,
             {
-              id: product.id,
+              id,
+              productId: product.id,
               name: product.name,
-              price: product.price,
+              price,
+              listPrice: product.price,
               imageUrl: product.imageUrl,
               yampiToken: product.yampiToken,
               qty: 1,
               personalized: Boolean(product.personalized),
+              fromOffer,
               brief,
             },
           ];

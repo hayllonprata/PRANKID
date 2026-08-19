@@ -199,6 +199,7 @@ adminRouter.post("/products", async (req, res) => {
       active: req.body?.active !== false,
       sortOrder: Number(req.body?.sortOrder || 0),
       personalized: Boolean(req.body?.personalized),
+      cartOffer: Boolean(req.body?.cartOffer),
     },
   });
   res.status(201).json(serializeProduct(product));
@@ -223,6 +224,7 @@ adminRouter.put("/products/:id", async (req, res) => {
       active: req.body?.active === undefined ? existing.active : Boolean(req.body.active),
       sortOrder: req.body?.sortOrder === undefined ? existing.sortOrder : Number(req.body.sortOrder),
       personalized: req.body?.personalized === undefined ? existing.personalized : Boolean(req.body.personalized),
+      cartOffer: req.body?.cartOffer === undefined ? existing.cartOffer : Boolean(req.body.cartOffer),
     },
   });
   res.json(serializeProduct(product));

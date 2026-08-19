@@ -88,6 +88,16 @@ export default function EditProductPage() {
           <span>
             <input
               type="checkbox"
+              checked={product.cartOffer}
+              onChange={(e) => setProduct({ ...product, cartOffer: e.target.checked })}
+            />{" "}
+            Exibir no carrinho (oferta +1 com 15% off)
+          </span>
+        </label>
+        <label>
+          <span>
+            <input
+              type="checkbox"
               checked={product.personalized}
               onChange={(e) => setProduct({ ...product, personalized: e.target.checked })}
             />{" "}

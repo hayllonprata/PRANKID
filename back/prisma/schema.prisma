@@ -61,10 +61,11 @@ model Product {
   yampiToken  String   @default("")
   sku         String   @default("")
   active      Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  personalized Boolean @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  sortOrder    Int      @default(0)
+  personalized Boolean  @default(false)
+  cartOffer    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model CustomBrief {

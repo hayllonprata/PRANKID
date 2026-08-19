@@ -9,6 +9,7 @@ export type Product = {
   active: boolean;
   sortOrder: number;
   personalized: boolean;
+  cartOffer: boolean;
 };
 
 export type Hero = {
@@ -140,11 +141,19 @@ export function instagramLink(raw: string) {
   return `https://www.instagram.com/${handle}`;
 }
 
+export const CART_OFFER_DISCOUNT = 0.15;
+
+export function offerPrice(price: number) {
+  return Math.round(price * (1 - CART_OFFER_DISCOUNT) * 100) / 100;
+}
+
 export function buildYampiCheckout(baseUrl: string, items: { yampiToken: string; qty: number }[]) {
   const base = baseUrl.replace(/\/$/, "");
-  const path = items
-    .filter((item) => item.yampiToken)
-    .map((item) => `${item.yampiToken}:${item.qty}`)
-    .join(",");
+  const merged = new Map<string, number>();
+  for (const item of items) {
+    if (!item.yampiToken) continue;
+    merged.set(item.yampiToken, (merged.get(item.yampiToken) || 0) + item.qty);
+  }
+  const path = [...merged.entries()].map(([token, qty]) => `${token}:${qty}`).join(",");
   return `${base}/r/${path}`;
 }
