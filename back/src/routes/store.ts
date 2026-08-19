@@ -7,11 +7,28 @@ import { prisma } from "../lib/prisma.js";
 import { fillBriefFromTranscript, transcribeAudioFile } from "../lib/openai-transcribe.js";
 import { productImageInclude } from "../lib/product-images.js";
 import { publicSettings, serializeProduct } from "../lib/serialize.js";
+import { isIpBlocked, trackSiteAccess } from "../lib/site-access.js";
 import { uploadDir } from "./upload.js";
 
 export const storeRouter = Router();
 
-storeRouter.get("/", async (_req, res) => {
+storeRouter.use(async (req, res, next) => {
+  try {
+    if (await isIpBlocked(req)) {
+      res.status(403).json({ error: "Acesso indisponível" });
+      return;
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+storeRouter.get("/", async (req, res) => {
+  void trackSiteAccess(req).catch((error) => {
+    console.error("Falha ao registrar acesso", error);
+  });
+
   const [hero, story, legend, crew, settings, products] = await Promise.all([
     prisma.hero.findUnique({ where: { id: "default" } }),
     prisma.story.findUnique({ where: { id: "default" } }),

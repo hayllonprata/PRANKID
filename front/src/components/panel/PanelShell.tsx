@@ -42,6 +42,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
     ["/panel/crew", "Quem levou embora"],
     ["/panel/produtos", "Produtos"],
     ["/panel/personalizacoes", "Personalizações"],
+    ["/panel/acessos", "Acessos"],
     ["/panel/config", "Configurações"],
   ] as const;
 

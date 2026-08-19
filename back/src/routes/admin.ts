@@ -320,3 +320,50 @@ adminRouter.get("/customizations", async (_req, res) => {
   });
   res.json(briefs);
 });
+
+adminRouter.get("/accesses", async (_req, res) => {
+  const [accesses, aggregates] = await Promise.all([
+    prisma.siteAccess.findMany({
+      orderBy: [{ lastSeenAt: "desc" }],
+    }),
+    prisma.siteAccess.aggregate({
+      _count: { _all: true },
+      _sum: { visitCount: true },
+    }),
+  ]);
+  const blockedCount = accesses.filter((item) => item.blocked).length;
+  res.json({
+    uniqueIps: aggregates._count._all,
+    totalVisits: aggregates._sum.visitCount || 0,
+    blockedCount,
+    accesses,
+  });
+});
+
+adminRouter.put("/accesses/:id", async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await prisma.siteAccess.findUnique({ where: { id } });
+  if (!existing) {
+    res.status(404).json({ error: "Acesso não encontrado" });
+    return;
+  }
+  const access = await prisma.siteAccess.update({
+    where: { id },
+    data: {
+      blocked: req.body?.blocked === undefined ? existing.blocked : Boolean(req.body.blocked),
+    },
+  });
+  res.json(access);
+});
+
+adminRouter.delete("/accesses/:id", async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await prisma.siteAccess.findUnique({ where: { id } });
+  if (!existing) {
+    res.status(404).json({ error: "Acesso não encontrado" });
+    return;
+  }
+  await prisma.siteAccess.delete({ where: { id } });
+  res.json({ ok: true });
+});
+

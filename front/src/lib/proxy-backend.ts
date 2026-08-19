@@ -17,6 +17,16 @@ export async function proxyToBackend(req: NextRequest, pathname: string) {
     headers.set(key, value);
   });
 
+  const clientIp =
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-real-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "";
+  if (clientIp) {
+    headers.set("x-prankid-client-ip", clientIp);
+    if (!headers.get("x-forwarded-for")) headers.set("x-forwarded-for", clientIp);
+  }
+
   const init: RequestInit & { duplex?: "half" } = {
     method: req.method,
     headers,

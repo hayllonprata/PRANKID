@@ -102,3 +102,22 @@ model CrewShot {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model SiteAccess {
+  id          String   @id @default(cuid())
+  ip          String   @unique
+  visitCount  Int      @default(1)
+  city        String   @default("")
+  region      String   @default("")
+  country     String   @default("")
+  countryCode String   @default("")
+  latitude    Float?
+  longitude   Float?
+  userAgent   String   @default("")
+  blocked     Boolean  @default(false)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  @@index([lastSeenAt])
+  @@index([visitCount])
+}

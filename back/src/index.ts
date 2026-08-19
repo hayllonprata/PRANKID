@@ -18,6 +18,7 @@ const origins = (process.env.CORS_ORIGIN || "http://localhost:3000")
   .map((item) => item.trim())
   .filter(Boolean);
 
+app.set("trust proxy", true);
 app.use(
   cors({
     origin: origins,

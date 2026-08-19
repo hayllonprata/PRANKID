@@ -23,6 +23,9 @@ export default function PanelHomePage() {
           <Link className="btn" href="/panel/produtos">
             Produtos
           </Link>
+          <Link className="btn" href="/panel/acessos">
+            Acessos
+          </Link>
           <Link className="btn magenta" href="/panel/config">
             WhatsApp e Yampi
           </Link>
