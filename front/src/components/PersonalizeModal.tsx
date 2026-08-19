@@ -90,7 +90,7 @@ export function PersonalizeModal({
       recorder.start();
       setRecording(true);
     } catch {
-      setError("Não foi possível usar o microfone. Você pode enviar um arquivo de áudio.");
+      setError("Não foi possível usar o microfone. Verifique as permissões do navegador.");
     }
   }
 
@@ -99,16 +99,11 @@ export function PersonalizeModal({
     setRecording(false);
   }
 
-  function onFile(file?: File) {
-    if (!file) return;
-    transcribeBlob(file, file.name || "briefing.webm");
-  }
-
   function onSubmit(event: FormEvent) {
     event.preventDefault();
     const typed = job.trim() && likes.trim() && colors.trim();
     if (!typed && !transcript.trim()) {
-      setError("Escreva os três campos ou envie um áudio.");
+      setError("Escreva os três campos ou grave um áudio.");
       return;
     }
     onConfirm({
@@ -158,12 +153,19 @@ export function PersonalizeModal({
                 Gravar áudio
               </button>
             )}
-            <label className="btn ghost" style={{ cursor: "pointer" }}>
-              Enviar arquivo
-              <input type="file" accept="audio/*,video/webm" hidden onChange={(e) => onFile(e.target.files?.[0])} />
-            </label>
           </div>
-          {busy ? <p className="muted">Transcrevendo e preenchendo os campos...</p> : null}
+          {busy ? (
+            <div className="rec-meter" style={{ background: "var(--bg-3)", borderColor: "var(--yellow)" }}>
+              <div className="rec-waves" aria-hidden="true">
+                <span style={{ background: "var(--cyan)" }} />
+                <span style={{ background: "var(--cyan)" }} />
+                <span style={{ background: "var(--cyan)" }} />
+                <span style={{ background: "var(--cyan)" }} />
+                <span style={{ background: "var(--cyan)" }} />
+              </div>
+              <strong>Transcrevendo e preenchendo os campos...</strong>
+            </div>
+          ) : null}
         </div>
         <form className="form-grid" onSubmit={onSubmit}>
           <label>
