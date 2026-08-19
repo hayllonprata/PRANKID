@@ -143,17 +143,15 @@ export function PersonalizeModal({
               <strong>Gravando {formatElapsed(elapsed)}</strong>
             </div>
           ) : null}
-          <div className="row-actions">
-            {recording ? (
-              <button className="btn magenta" type="button" onClick={stopRecording}>
-                ENVIAR AUDIO
-              </button>
-            ) : (
-              <button className="btn" type="button" onClick={startRecording} disabled={busy}>
-                Gravar áudio
-              </button>
-            )}
-          </div>
+          {recording ? (
+            <button className="btn magenta full" type="button" onClick={stopRecording}>
+              ENVIAR AUDIO
+            </button>
+          ) : (
+            <button className="btn full" type="button" onClick={startRecording} disabled={busy}>
+              Gravar áudio
+            </button>
+          )}
           {busy ? (
             <div className="rec-meter" style={{ background: "var(--bg-3)", borderColor: "var(--yellow)" }}>
               <div className="rec-waves" aria-hidden="true">
