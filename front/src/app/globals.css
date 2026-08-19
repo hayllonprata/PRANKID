@@ -320,6 +320,78 @@ img { max-width: 100%; display: block; }
 
 .story p { color: var(--muted); line-height: 1.7; font-size: 17px; }
 
+.legend-list {
+  display: grid;
+  gap: 28px;
+}
+
+.legend-beat {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 28px;
+  align-items: center;
+  background: var(--bg-2);
+  border: 2px solid #000;
+  box-shadow: 10px 10px 0 var(--magenta);
+  padding: 18px;
+}
+
+.legend-beat.alt {
+  grid-template-columns: 1.05fr 0.95fr;
+  box-shadow: 10px 10px 0 var(--yellow);
+}
+
+.legend-beat.alt img,
+.legend-beat.alt .legend-placeholder {
+  order: 2;
+}
+
+.legend-beat img,
+.legend-placeholder {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border: 2px solid #000;
+}
+
+.legend-placeholder {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #1a1a22, #2a1020 55%, #143038);
+  color: var(--text);
+}
+
+.legend-placeholder span {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+
+.legend-placeholder strong {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.04em;
+}
+
+.legend-copy p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.65;
+}
+
+.legend-num {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--yellow);
+  letter-spacing: 0.08em;
+}
+
 .site-footer {
   border-top: 1px solid var(--line);
   padding: 28px 0 40px;
@@ -520,6 +592,7 @@ img { max-width: 100%; display: block; }
 }
 
 .msg { font-size: 14px; }
+.muted { color: var(--muted); font-size: 14px; }
 .msg.ok { color: #7dffb3; }
 .msg.err { color: #ff8fab; }
 
@@ -538,8 +611,12 @@ img { max-width: 100%; display: block; }
 }
 
 @media (max-width: 900px) {
-  .hero, .story, .grid-products, .panel-shell {
+  .hero, .story, .grid-products, .panel-shell, .legend-beat {
     grid-template-columns: 1fr;
+  }
+  .legend-beat.alt img,
+  .legend-beat.alt .legend-placeholder {
+    order: 0;
   }
   .nav { display: none; }
   .hero-frame { transform: none; }

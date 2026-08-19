@@ -57,6 +57,29 @@ adminRouter.put("/story", async (req, res) => {
   res.json(story);
 });
 
+adminRouter.get("/legend", async (_req, res) => {
+  const legend = await prisma.legendBeat.findMany({ orderBy: { sortOrder: "asc" } });
+  res.json(legend);
+});
+
+adminRouter.put("/legend/:id", async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await prisma.legendBeat.findUnique({ where: { id } });
+  if (!existing) {
+    res.status(404).json({ error: "Cena não encontrada" });
+    return;
+  }
+  const beat = await prisma.legendBeat.update({
+    where: { id },
+    data: {
+      title: String(req.body?.title ?? existing.title),
+      caption: String(req.body?.caption ?? existing.caption),
+      imageUrl: String(req.body?.imageUrl ?? existing.imageUrl),
+    },
+  });
+  res.json(beat);
+});
+
 adminRouter.get("/settings", async (_req, res) => {
   const settings = await prisma.settings.findUnique({ where: { id: "default" } });
   res.json(settings);

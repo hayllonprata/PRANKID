@@ -26,6 +26,14 @@ export type Story = {
   imageUrl: string;
 };
 
+export type LegendBeat = {
+  id: string;
+  sortOrder: number;
+  title: string;
+  caption: string;
+  imageUrl: string;
+};
+
 export type Settings = {
   whatsapp: string;
   yampiBaseUrl: string;
@@ -36,6 +44,7 @@ export type Settings = {
 export type StoreData = {
   hero: Hero | null;
   story: Story | null;
+  legend: LegendBeat[];
   settings: Settings;
   products: Product[];
 };

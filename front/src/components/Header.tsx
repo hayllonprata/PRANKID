@@ -11,7 +11,8 @@ export function Header() {
         <BrandLogo href="#topo" height={42} />
         <nav className="nav">
           <a href="#produtos">Produtos</a>
-          <a href="#historia">História</a>
+          <a href="#prankid">PRANKID</a>
+          <a href="#historia">Idealizadores</a>
         </nav>
         <button className="icon-btn" type="button" onClick={() => setOpen(true)} aria-label="Abrir carrinho">
           🛒

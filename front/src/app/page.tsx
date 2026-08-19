@@ -6,6 +6,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
+import { LegendSection } from "@/components/LegendSection";
 import { ProductsSection } from "@/components/ProductsSection";
 import { StorySection } from "@/components/StorySection";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -37,6 +38,7 @@ export default function HomePage() {
       <main>
         <HeroSection hero={data.hero} />
         <ProductsSection products={data.products} />
+        <LegendSection beats={data.legend || []} />
         <StorySection story={data.story} />
       </main>
       <Footer settings={data.settings} />

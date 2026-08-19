@@ -9,6 +9,7 @@ export function StorySection({ story }: { story: Story | null }) {
         <div className="story">
           {src ? <img src={src} alt={story.title} /> : <div className="story-placeholder" />}
           <div>
+            <p className="kicker">Os idealizadores</p>
             <h2>{story.title}</h2>
             <p>{story.description}</p>
           </div>
