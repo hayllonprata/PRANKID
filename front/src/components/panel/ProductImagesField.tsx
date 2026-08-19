@@ -73,7 +73,7 @@ export function ProductImagesField({
         Imagens do produto
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
           multiple
           disabled={busy}
           onChange={(e) => {
@@ -82,7 +82,7 @@ export function ProductImagesField({
           }}
         />
         <span className="muted">
-          Selecione uma ou várias fotos. JPG, PNG, GIF e WEBP são convertidos para WEBP para ficar mais leve.
+          Selecione uma ou várias fotos. JPG, PNG, GIF, WEBP e HEIC são convertidos para WEBP para ficar mais leve.
         </span>
         {progress ? <span>{progress}</span> : null}
         {error ? <span className="msg err">{error}</span> : null}

@@ -4,30 +4,70 @@ import { randomUUID } from "node:crypto";
 import { Router } from "express";
 import multer from "multer";
 import sharp from "sharp";
+import convertHeic from "heic-convert";
 import { requireAuth } from "../middleware/auth.js";
 
 const uploadDir = path.resolve(process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads"));
 fs.mkdirSync(uploadDir, { recursive: true });
 
-const allowed = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const allowed = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+]);
+
+const heicMimes = new Set(["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"]);
+const heicBrands = new Set(["heic", "heix", "hevc", "hevx", "heim", "heis", "hevm", "hevs", "mif1", "msf1"]);
+
+function hasHeicExtension(name: string) {
+  const lower = name.toLowerCase();
+  return lower.endsWith(".heic") || lower.endsWith(".heif");
+}
+
+function looksLikeHeic(buffer: Buffer) {
+  if (buffer.length < 12) return false;
+  if (buffer.toString("ascii", 4, 8) !== "ftyp") return false;
+  return heicBrands.has(buffer.toString("ascii", 8, 12).toLowerCase());
+}
+
+function isHeicUpload(file: Express.Multer.File) {
+  const mime = (file.mimetype || "").toLowerCase();
+  return heicMimes.has(mime) || hasHeicExtension(file.originalname || "") || looksLikeHeic(file.buffer);
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (!allowed.has(file.mimetype)) {
-      cb(new Error("Use JPG, PNG, WEBP ou GIF"));
+    const mime = (file.mimetype || "").toLowerCase();
+    const octetHeic =
+      (mime === "application/octet-stream" || mime === "application/heic" || !mime) &&
+      hasHeicExtension(file.originalname || "");
+    if (!allowed.has(mime) && !octetHeic) {
+      cb(new Error("Use JPG, PNG, WEBP, GIF ou HEIC"));
       return;
     }
     cb(null, true);
   },
 });
 
+async function rasterBuffer(file: Express.Multer.File) {
+  if (!isHeicUpload(file)) return file.buffer;
+  const jpeg = await convertHeic({ buffer: file.buffer, format: "JPEG", quality: 0.95 });
+  return Buffer.from(jpeg);
+}
+
 async function saveAsWebp(file: Express.Multer.File) {
   const filename = `${randomUUID()}.webp`;
-  const meta = await sharp(file.buffer, { animated: true, failOn: "none" }).metadata();
+  const buffer = await rasterBuffer(file);
+  const meta = await sharp(buffer, { animated: true, failOn: "none" }).metadata();
   const animated = (meta.pages ?? 1) > 1;
-  let pipeline = sharp(file.buffer, { animated, failOn: "none" });
+  let pipeline = sharp(buffer, { animated, failOn: "none" });
   if (!animated) pipeline = pipeline.rotate();
   await pipeline
     .resize({

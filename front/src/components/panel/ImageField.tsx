@@ -34,9 +34,13 @@ export function ImageField({
   return (
     <label>
       {label}
-      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(e) => onFile(e.target.files?.[0])} />
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+        onChange={(e) => onFile(e.target.files?.[0])}
+      />
       {busy ? <span>Enviando...</span> : null}
-      <span className="muted">A imagem é convertida para WEBP no envio.</span>
+      <span className="muted">JPG, PNG, GIF, WEBP e HEIC são convertidos para WEBP no envio.</span>
       {error ? <span className="msg err">{error}</span> : null}
       {value ? <img className="preview" src={mediaUrl(value)} alt="" /> : null}
     </label>
