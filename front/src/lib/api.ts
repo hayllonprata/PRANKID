@@ -43,7 +43,12 @@ export type StoreData = {
 const TOKEN_KEY = "prankid_admin_token";
 
 export function getApiUrl() {
-  return (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(/\/$/, "");
+  // O browser chama o próprio front; o Next.js encaminha para a API em runtime.
+  if (typeof window !== "undefined") return "";
+  return (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(
+    /\/$/,
+    "",
+  );
 }
 
 export function mediaUrl(path?: string | null) {
