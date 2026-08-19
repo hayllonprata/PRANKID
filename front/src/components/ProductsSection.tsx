@@ -44,10 +44,7 @@ export function ProductsSection({ products }: { products: Product[] }) {
                   ‹
                 </button>
               ) : null}
-              <div
-                className="grid-products"
-                style={{ gridTemplateColumns: `repeat(${Math.min(PAGE_SIZE, visible.length)}, minmax(0, 1fr))` }}
-              >
+              <div className="grid-products">
                 {visible.map((product) => {
                   const src = mediaUrl(product.imageUrl);
                   return (
