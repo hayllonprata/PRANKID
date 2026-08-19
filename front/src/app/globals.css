@@ -454,8 +454,31 @@ img { max-width: 100%; display: block; }
 .site-footer-inner {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ig-btn {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #000;
+  background: var(--magenta);
+  color: white;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.ig-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #000;
 }
 
 .wa {

@@ -17,6 +17,7 @@ export const siteCopy = {
   foundersDescription:
     "Hayllon Prata, empresário, e Daniel Magalhães, artista plástico, se conheceram na cidade onde moravam e idealizaram o PRANKID. A marca nasceu da união entre a história de sucesso do Hayllon e a arte do Dan.\n\nHayllon empreende desde os 14 anos. Passou pelo mercado industrial e hoje é um grande nome da tecnologia. Daniel, o Dan, é figura conhecida no Brasil por trabalhos para grandes artistas e empresários de diversas áreas.\n\nUm constrói. O outro assina. Juntos, eles colocaram no mundo a lenda de quem veio da rua e nunca esqueceu de onde veio. Liberdade e Sucesso.",
   footer: "Liberdade e Sucesso.",
+  instagram: "https://www.instagram.com/prankid_world/",
   legendKicker: "A lenda",
   legendTitle: "Seu nome é PRANKID",
   cartEmpty: "O carrinho está vazio. Leva uma assinatura embora.",

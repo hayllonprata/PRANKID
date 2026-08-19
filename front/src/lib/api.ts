@@ -126,7 +126,7 @@ export function instagramLink(raw: string) {
   if (!raw) return "";
   if (raw.startsWith("http")) return raw;
   const handle = raw.replace(/^@/, "");
-  return `https://instagram.com/${handle}`;
+  return `https://www.instagram.com/${handle}`;
 }
 
 export function buildYampiCheckout(baseUrl: string, items: { yampiToken: string; qty: number }[]) {
