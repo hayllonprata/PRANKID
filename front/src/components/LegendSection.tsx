@@ -31,6 +31,8 @@ export function LegendSection({ beats }: { beats: LegendBeat[] }) {
             {paragraphs.map((text, index) => (
               <p key={index}>{text}</p>
             ))}
+            <p className="slogan">{siteCopy.slogan}</p>
+            <p className="slogan-en">{siteCopy.sloganEn}</p>
             <BrandLogo href={null} height={56} />
           </div>
           {photos.length ? (
