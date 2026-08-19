@@ -1,0 +1,11 @@
+CREATE TABLE "CrewShot" (
+    "id" TEXT NOT NULL,
+    "imageUrl" TEXT NOT NULL,
+    "caption" TEXT NOT NULL DEFAULT '',
+    "sortOrder" INTEGER NOT NULL DEFAULT 0,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "CrewShot_pkey" PRIMARY KEY ("id")
+);

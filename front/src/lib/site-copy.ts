@@ -11,6 +11,9 @@ export const siteCopy = {
   productsLead: "Objetos com a assinatura de quem criou onde quis. Liberdade e Sucesso.",
   legendKicker: "A lenda",
   legendTitle: "Seu nome é PRANKID",
+  crewKicker: "Freedom crew",
+  crewTitle: "Quem levou embora",
+  crewLead: "Compradores reais. PRANKID na casa, na estante, na rua.",
   footerFallback: "Liberdade e Sucesso.",
   cartEmpty: "O carrinho está vazio. Leva uma assinatura embora.",
 } as const;
