@@ -225,6 +225,70 @@ img { max-width: 100%; display: block; }
 
 .section-head p { color: var(--muted); margin: 0; }
 
+.crew-stage {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.crew-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.crew-card {
+  margin: 0;
+  background: var(--bg-2);
+  border: 2px solid #000;
+  box-shadow: 8px 8px 0 var(--magenta);
+  overflow: hidden;
+}
+
+.crew-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+}
+
+.crew-card figcaption {
+  padding: 10px 12px 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.crew-nav {
+  width: 44px;
+  height: 44px;
+  border: 2px solid #000;
+  background: var(--yellow);
+  color: #111;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.crew-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.crew-dots button {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 2px solid #000;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.crew-dots button.on { background: var(--yellow); }
+
 .grid-products {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -603,6 +667,13 @@ img { max-width: 100%; display: block; }
   .hero, .story, .grid-products, .panel-shell {
     grid-template-columns: 1fr;
   }
+  .crew-grid {
+    grid-template-columns: 1fr;
+  }
+  .crew-stage {
+    grid-template-columns: 1fr;
+  }
+  .crew-nav { justify-self: center; }
   .hero-frame { transform: none; }
   .panel-side { display: flex; gap: 8px; overflow: auto; }
 }

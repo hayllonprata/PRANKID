@@ -80,6 +80,60 @@ adminRouter.put("/legend/:id", async (req, res) => {
   res.json(beat);
 });
 
+adminRouter.get("/crew", async (_req, res) => {
+  const shots = await prisma.crewShot.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+  res.json(shots);
+});
+
+adminRouter.post("/crew", async (req, res) => {
+  const imageUrl = String(req.body?.imageUrl || "").trim();
+  if (!imageUrl) {
+    res.status(400).json({ error: "Imagem é obrigatória" });
+    return;
+  }
+  const shot = await prisma.crewShot.create({
+    data: {
+      imageUrl,
+      caption: String(req.body?.caption ?? ""),
+      sortOrder: Number(req.body?.sortOrder || 0),
+      active: req.body?.active !== false,
+    },
+  });
+  res.status(201).json(shot);
+});
+
+adminRouter.put("/crew/:id", async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await prisma.crewShot.findUnique({ where: { id } });
+  if (!existing) {
+    res.status(404).json({ error: "Foto não encontrada" });
+    return;
+  }
+  const shot = await prisma.crewShot.update({
+    where: { id },
+    data: {
+      imageUrl: String(req.body?.imageUrl ?? existing.imageUrl),
+      caption: String(req.body?.caption ?? existing.caption),
+      sortOrder: req.body?.sortOrder === undefined ? existing.sortOrder : Number(req.body.sortOrder),
+      active: req.body?.active === undefined ? existing.active : Boolean(req.body.active),
+    },
+  });
+  res.json(shot);
+});
+
+adminRouter.delete("/crew/:id", async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await prisma.crewShot.findUnique({ where: { id } });
+  if (!existing) {
+    res.status(404).json({ error: "Foto não encontrada" });
+    return;
+  }
+  await prisma.crewShot.delete({ where: { id } });
+  res.json({ ok: true });
+});
+
 adminRouter.get("/settings", async (_req, res) => {
   const settings = await prisma.settings.findUnique({ where: { id: "default" } });
   res.json(settings);

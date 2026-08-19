@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, type StoreData } from "@/lib/api";
 import { CartDrawer } from "@/components/CartDrawer";
+import { CrewSection } from "@/components/CrewSection";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
@@ -39,6 +40,7 @@ export default function HomePage() {
         <HeroSection hero={data.hero} />
         <ProductsSection products={data.products} />
         <LegendSection beats={data.legend || []} />
+        <CrewSection shots={data.crew || []} />
         <StorySection story={data.story} />
       </main>
       <Footer settings={data.settings} />
