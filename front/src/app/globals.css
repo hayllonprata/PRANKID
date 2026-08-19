@@ -597,6 +597,26 @@ img { max-width: 100%; display: block; }
   overflow: auto;
 }
 
+.personalize-drawer .form-grid {
+  gap: 10px;
+}
+
+.personalize-drawer .form-grid textarea {
+  min-height: 0;
+  height: calc(2em * 1.25 + 12px);
+  padding: 6px 10px;
+  line-height: 1.25;
+  resize: vertical;
+  overflow-y: auto;
+}
+
+.personalize-drawer form.form-grid > .btn.full {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: 4px;
+}
+
 .rec-meter {
   display: flex;
   align-items: center;

@@ -168,15 +168,15 @@ export function PersonalizeModal({
         <form className="form-grid" onSubmit={onSubmit}>
           <label>
             O que você faz?
-            <textarea value={job} onChange={(e) => setJob(e.target.value)} placeholder="Trabalho, ofício, rotina..." />
+            <textarea rows={2} value={job} onChange={(e) => setJob(e.target.value)} placeholder="Trabalho, ofício, rotina..." />
           </label>
           <label>
             Do que você gosta?
-            <textarea value={likes} onChange={(e) => setLikes(e.target.value)} placeholder="Estilo, referências, manias, o que te representa..." />
+            <textarea rows={2} value={likes} onChange={(e) => setLikes(e.target.value)} placeholder="Estilo, referências, manias, o que te representa..." />
           </label>
           <label>
             Quais cores você quer no seu PRANKID?
-            <textarea value={colors} onChange={(e) => setColors(e.target.value)} placeholder="Amarelo, preto, magenta..." />
+            <textarea rows={2} value={colors} onChange={(e) => setColors(e.target.value)} placeholder="Amarelo, preto, magenta..." />
           </label>
           {error ? <p className="cart-error">{error}</p> : null}
           <button className="btn full" type="submit" disabled={busy || recording}>
