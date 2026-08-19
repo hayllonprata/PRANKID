@@ -57,23 +57,13 @@ img { max-width: 100%; display: block; }
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--font-display);
-  letter-spacing: 0.08em;
-  font-size: 32px;
+  line-height: 0;
 }
 
-.logo-mark {
-  width: 42px;
-  height: 42px;
-  border: 2px solid #000;
-  background: var(--yellow);
-  color: #111;
-  display: grid;
-  place-items: center;
-  font-size: 22px;
-  box-shadow: 3px 3px 0 var(--magenta);
-  transform: rotate(-8deg);
+.logo-img {
+  width: auto;
+  max-width: min(220px, 52vw);
+  object-fit: contain;
 }
 
 .nav {
@@ -505,10 +495,8 @@ img { max-width: 100%; display: block; }
   padding: 28px;
 }
 
-.login-card h1 {
-  font-family: var(--font-display);
-  font-size: 48px;
-  margin: 0 0 8px;
+.login-card .logo {
+  margin-bottom: 10px;
 }
 
 .table {

@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandLogo } from "./BrandLogo";
 import { useCart } from "./CartProvider";
 
 export function Header() {
@@ -7,10 +8,7 @@ export function Header() {
   return (
     <header className="site-header">
       <div className="wrap site-header-inner">
-        <a className="logo" href="#topo">
-          <span className="logo-mark">PK</span>
-          PRANKID
-        </a>
+        <BrandLogo href="#topo" height={42} />
         <nav className="nav">
           <a href="#produtos">Produtos</a>
           <a href="#historia">História</a>

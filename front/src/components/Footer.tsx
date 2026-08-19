@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/BrandLogo";
 import { instagramLink, type Settings } from "@/lib/api";
 
 export function Footer({ settings }: { settings: Settings }) {
@@ -5,7 +6,7 @@ export function Footer({ settings }: { settings: Settings }) {
     <footer className="site-footer">
       <div className="wrap site-footer-inner">
         <div>
-          <strong>PRANKID</strong>
+          <BrandLogo href="#topo" height={36} />
           <p>{settings.footer || "Toy art feita pra bagunçar o sério."}</p>
         </div>
         {settings.instagram ? (
