@@ -42,6 +42,15 @@ model Story {
   updatedAt   DateTime @updatedAt
 }
 
+model LegendBeat {
+  id        String   @id
+  sortOrder Int
+  title     String
+  caption   String
+  imageUrl  String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
 model Product {
   id          String   @id @default(cuid())
   name        String

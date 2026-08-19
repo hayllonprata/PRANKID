@@ -5,9 +5,10 @@ import { publicSettings, serializeProduct } from "../lib/serialize.js";
 export const storeRouter = Router();
 
 storeRouter.get("/", async (_req, res) => {
-  const [hero, story, settings, products] = await Promise.all([
+  const [hero, story, legend, settings, products] = await Promise.all([
     prisma.hero.findUnique({ where: { id: "default" } }),
     prisma.story.findUnique({ where: { id: "default" } }),
+    prisma.legendBeat.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.settings.findUnique({ where: { id: "default" } }),
     prisma.product.findMany({
       where: { active: true },
@@ -18,6 +19,7 @@ storeRouter.get("/", async (_req, res) => {
   res.json({
     hero,
     story,
+    legend,
     settings: settings ? publicSettings(settings) : { whatsapp: "", yampiBaseUrl: "", instagram: "", footer: "" },
     products: products.map(serializeProduct),
   });

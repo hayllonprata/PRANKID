@@ -34,7 +34,7 @@ export default function StoryPage() {
 
   return (
     <>
-      <h1>História</h1>
+      <h1>Idealizadores</h1>
       <form className="panel-card form-grid" onSubmit={onSubmit}>
         <label>
           Título

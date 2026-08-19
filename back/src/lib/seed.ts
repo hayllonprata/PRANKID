@@ -1,5 +1,6 @@
 import { prisma } from "./prisma.js";
 import { hashPassword } from "./auth.js";
+import { prankidLegendBeats } from "./legend.js";
 
 export async function seedIfNeeded() {
   const adminCount = await prisma.admin.count();
@@ -51,6 +52,24 @@ export async function seedIfNeeded() {
       imageUrl: "",
     },
   });
+
+  for (const beat of prankidLegendBeats) {
+    await prisma.legendBeat.upsert({
+      where: { id: beat.id },
+      create: {
+        id: beat.id,
+        sortOrder: beat.sortOrder,
+        title: beat.title,
+        caption: beat.caption,
+        imageUrl: "",
+      },
+      update: {
+        sortOrder: beat.sortOrder,
+        title: beat.title,
+        caption: beat.caption,
+      },
+    });
+  }
 
   const productCount = await prisma.product.count();
   if (productCount === 0) {

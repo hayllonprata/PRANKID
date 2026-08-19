@@ -1,5 +1,5 @@
 type BrandLogoProps = {
-  href?: string;
+  href?: string | null;
   className?: string;
   height?: number;
 };
@@ -9,7 +9,7 @@ export function BrandLogo({ href = "/", className = "", height = 44 }: BrandLogo
     <img className="logo-img" src="/logo.webp" alt="PRANKID" style={{ height }} />
   );
 
-  if (!href) {
+  if (href === null) {
     return <span className={`logo ${className}`.trim()}>{image}</span>;
   }
 
