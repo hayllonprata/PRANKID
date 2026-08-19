@@ -37,7 +37,11 @@ export function CartDrawer({ yampiBaseUrl, products }: { yampiBaseUrl: string; p
       setError("O checkout ainda não foi configurado. Informe a URL da Yampi no painel.");
       return;
     }
-    const missing = items.filter((item) => !item.yampiToken);
+    const withTokens = items.map((item) => {
+      const live = products.find((product) => product.id === item.productId);
+      return { ...item, yampiToken: (live?.yampiToken || item.yampiToken || "").trim() };
+    });
+    const missing = withTokens.filter((item) => !item.yampiToken);
     if (missing.length) {
       setError(`Cadastre o token Yampi de: ${missing.map((item) => item.name).join(", ")}.`);
       return;
@@ -69,7 +73,7 @@ export function CartDrawer({ yampiBaseUrl, products }: { yampiBaseUrl: string; p
           }),
         });
       }
-      window.location.href = buildYampiCheckout(yampiBaseUrl, items);
+      window.location.href = buildYampiCheckout(yampiBaseUrl, withTokens);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível enviar o briefing.");
       setBusy(false);

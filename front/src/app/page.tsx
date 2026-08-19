@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, type StoreData } from "@/lib/api";
+import { useCart } from "@/components/CartProvider";
 import { CartDrawer } from "@/components/CartDrawer";
 import { CrewSection } from "@/components/CrewSection";
 import { Footer } from "@/components/Footer";
@@ -13,6 +14,7 @@ import { StorySection } from "@/components/StorySection";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 export default function HomePage() {
+  const { syncCatalog } = useCart();
   const [data, setData] = useState<StoreData | null>(null);
   const [error, setError] = useState("");
 
@@ -21,6 +23,10 @@ export default function HomePage() {
       .then(setData)
       .catch((err: Error) => setError(err.message));
   }, []);
+
+  useEffect(() => {
+    if (data?.products) syncCatalog(data.products);
+  }, [data, syncCatalog]);
 
   if (error) {
     return (

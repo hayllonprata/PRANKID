@@ -24,6 +24,7 @@ type CartContextValue = {
   open: boolean;
   setOpen: (open: boolean) => void;
   add: (product: Product, brief?: PersonalBrief, fromOffer?: boolean) => void;
+  syncCatalog: (products: Product[]) => void;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
   clear: () => void;
@@ -81,11 +82,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems((current) => {
           const found = current.find((item) => item.id === id);
           if (found && !product.personalized) {
-            return current.map((item) => (item.id === id ? { ...item, qty: item.qty + 1 } : item));
+            return current.map((item) =>
+              item.id === id
+                ? { ...item, qty: item.qty + 1, yampiToken: product.yampiToken, name: product.name }
+                : item,
+            );
           }
           if (found && product.personalized) {
             return current.map((item) =>
-              item.id === id ? { ...item, qty: 1, brief, personalized: true } : item,
+              item.id === id
+                ? { ...item, qty: 1, brief, personalized: true, yampiToken: product.yampiToken }
+                : item,
             );
           }
           return [
@@ -106,6 +113,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           ];
         });
         setOpen(true);
+      },
+      syncCatalog: (products) => {
+        const byId = new Map(products.map((product) => [product.id, product]));
+        setItems((current) => {
+          let changed = false;
+          const next = current.map((item) => {
+            const product = byId.get(item.productId);
+            const token = (product?.yampiToken || item.yampiToken || "").trim();
+            if (!product || token === item.yampiToken) return item;
+            changed = true;
+            return { ...item, yampiToken: token, name: product.name };
+          });
+          return changed ? next : current;
+        });
       },
       setQty: (id, qty) => {
         setItems((current) =>
