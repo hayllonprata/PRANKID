@@ -26,12 +26,14 @@ export function decimalToNumber(value: Decimal | number | string) {
 export function publicSettings(settings: {
   whatsapp: string;
   yampiBaseUrl: string;
+  yampiPromocode: string;
   instagram: string;
   footer: string;
 }) {
   return {
     whatsapp: settings.whatsapp,
     yampiBaseUrl: settings.yampiBaseUrl,
+    yampiPromocode: settings.yampiPromocode,
     instagram: settings.instagram,
     footer: settings.footer,
   };
@@ -40,6 +42,7 @@ export function publicSettings(settings: {
 export function serializeAdminSettings(settings: {
   whatsapp: string;
   yampiBaseUrl: string;
+  yampiPromocode: string;
   instagram: string;
   footer: string;
   openaiApiKey: string;
@@ -47,6 +50,7 @@ export function serializeAdminSettings(settings: {
   return {
     whatsapp: settings.whatsapp,
     yampiBaseUrl: settings.yampiBaseUrl,
+    yampiPromocode: settings.yampiPromocode,
     instagram: settings.instagram,
     footer: settings.footer,
     openaiApiKey: "",

@@ -62,6 +62,7 @@ export type CrewShot = {
 export type Settings = {
   whatsapp: string;
   yampiBaseUrl: string;
+  yampiPromocode: string;
   instagram: string;
   footer: string;
   openaiApiKey?: string;
@@ -160,7 +161,11 @@ export function offerPrice(price: number) {
   return Math.round(price * (1 - CART_OFFER_DISCOUNT) * 100) / 100;
 }
 
-export function buildYampiCheckout(baseUrl: string, items: { yampiToken: string; qty: number }[]) {
+export function buildYampiCheckout(
+  baseUrl: string,
+  items: { yampiToken: string; qty: number }[],
+  promocode?: string,
+) {
   const base = baseUrl.replace(/\/$/, "");
   const merged = new Map<string, number>();
   for (const item of items) {
@@ -168,5 +173,8 @@ export function buildYampiCheckout(baseUrl: string, items: { yampiToken: string;
     merged.set(item.yampiToken, (merged.get(item.yampiToken) || 0) + item.qty);
   }
   const path = [...merged.entries()].map(([token, qty]) => `${token}:${qty}`).join(",");
-  return `${base}/r/${path}`;
+  const url = `${base}/r/${path}`;
+  const code = (promocode || "").trim().replace(/\s+/g, "");
+  if (!code) return url;
+  return `${url}?promocode=${encodeURIComponent(code)}`;
 }

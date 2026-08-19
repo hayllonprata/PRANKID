@@ -50,7 +50,9 @@ storeRouter.get("/", async (req, res) => {
     story,
     legend,
     crew,
-    settings: settings ? publicSettings(settings) : { whatsapp: "", yampiBaseUrl: "", instagram: "", footer: "" },
+    settings: settings
+      ? publicSettings(settings)
+      : { whatsapp: "", yampiBaseUrl: "", yampiPromocode: "", instagram: "", footer: "" },
     products: products.map(serializeProduct),
   });
 });

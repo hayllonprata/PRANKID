@@ -1,0 +1,1 @@
+ALTER TABLE "Settings" ADD COLUMN "yampiPromocode" TEXT NOT NULL DEFAULT '';

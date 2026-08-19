@@ -18,8 +18,9 @@ model Admin {
 model Settings {
   id           String   @id @default("default")
   whatsapp     String   @default("")
-  yampiBaseUrl String   @default("")
-  instagram    String   @default("")
+  yampiBaseUrl   String   @default("")
+  yampiPromocode String   @default("")
+  instagram      String   @default("")
   footer       String   @default("")
   openaiApiKey String   @default("")
   updatedAt    DateTime @updatedAt

@@ -148,6 +148,7 @@ adminRouter.get("/settings", async (_req, res) => {
       : {
           whatsapp: "",
           yampiBaseUrl: "",
+          yampiPromocode: "",
           instagram: "",
           footer: "",
           openaiApiKey: "",
@@ -160,11 +161,13 @@ adminRouter.put("/settings", async (req, res) => {
   const existing = await prisma.settings.findUnique({ where: { id: "default" } });
   const incomingKey = String(req.body?.openaiApiKey ?? "").trim();
   const openaiApiKey = incomingKey || existing?.openaiApiKey || "";
+  const yampiPromocode = String(req.body?.yampiPromocode ?? "").trim().replace(/\s+/g, "");
   const settings = await prisma.settings.upsert({
     where: { id: "default" },
     update: {
       whatsapp: String(req.body?.whatsapp ?? "").replace(/\D/g, ""),
       yampiBaseUrl: String(req.body?.yampiBaseUrl ?? "").replace(/\/$/, ""),
+      yampiPromocode,
       instagram: String(req.body?.instagram ?? ""),
       footer: String(req.body?.footer ?? ""),
       openaiApiKey,
@@ -173,6 +176,7 @@ adminRouter.put("/settings", async (req, res) => {
       id: "default",
       whatsapp: String(req.body?.whatsapp ?? "").replace(/\D/g, ""),
       yampiBaseUrl: String(req.body?.yampiBaseUrl ?? "").replace(/\/$/, ""),
+      yampiPromocode,
       instagram: String(req.body?.instagram ?? ""),
       footer: String(req.body?.footer ?? ""),
       openaiApiKey,

@@ -52,6 +52,19 @@ export default function ConfigPage() {
           />
         </label>
         <label>
+          Cupom Yampi (15% off)
+          <input
+            value={settings.yampiPromocode || ""}
+            onChange={(e) => setSettings({ ...settings, yampiPromocode: e.target.value })}
+            placeholder="PRANKID15"
+          />
+        </label>
+        <p className="muted">
+          Crie o cupom de 15% em Marketing → Cupons na Yampi e cole o código aqui. O checkout recebe
+          <code> ?promocode= </code>
+          no link de compra, então o desconto também vale se o cliente incluir mais produtos lá.
+        </p>
+        <label>
           Instagram
           <input
             value={settings.instagram}

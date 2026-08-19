@@ -6,7 +6,15 @@ import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
 
-export function CartDrawer({ yampiBaseUrl, products }: { yampiBaseUrl: string; products: Product[] }) {
+export function CartDrawer({
+  yampiBaseUrl,
+  yampiPromocode,
+  products,
+}: {
+  yampiBaseUrl: string;
+  yampiPromocode?: string;
+  products: Product[];
+}) {
   const { items, total, open, setOpen, setQty, remove, add } = useCart();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -73,7 +81,7 @@ export function CartDrawer({ yampiBaseUrl, products }: { yampiBaseUrl: string; p
           }),
         });
       }
-      window.location.href = buildYampiCheckout(yampiBaseUrl, withTokens);
+      window.location.href = buildYampiCheckout(yampiBaseUrl, withTokens, yampiPromocode);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível enviar o briefing.");
       setBusy(false);
@@ -164,7 +172,11 @@ export function CartDrawer({ yampiBaseUrl, products }: { yampiBaseUrl: string; p
             <span>Total da vitrine</span>
             <strong>{formatBRL(total)}</strong>
           </div>
-          <p className="cart-note">O valor final é confirmado no checkout da Yampi.</p>
+          <p className="cart-note">
+            {yampiPromocode
+              ? "O cupom de 15% vai junto para o checkout da Yampi e continua valendo se você incluir mais peças lá."
+              : "O valor final é confirmado no checkout da Yampi."}
+          </p>
           {error ? <p className="cart-error">{error}</p> : null}
           <button className="btn full" type="button" onClick={checkout} disabled={items.length === 0 || busy}>
             {busy ? "Enviando..." : "Finalizar compra"}

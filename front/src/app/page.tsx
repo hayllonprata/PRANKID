@@ -50,7 +50,11 @@ export default function HomePage() {
         <StorySection story={data.story} />
       </main>
       <Footer settings={data.settings} />
-      <CartDrawer yampiBaseUrl={data.settings.yampiBaseUrl} products={data.products} />
+      <CartDrawer
+        yampiBaseUrl={data.settings.yampiBaseUrl}
+        yampiPromocode={data.settings.yampiPromocode}
+        products={data.products}
+      />
       <WhatsAppButton number={data.settings.whatsapp} />
     </>
   );

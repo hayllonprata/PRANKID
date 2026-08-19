@@ -41,6 +41,7 @@ Login inicial (se não alterar as envs): `admin@prankid.com` / `altere-esta-senh
 2. Em `/panel/config`, cole a URL base: `https://seguro.seudominio.com.br`.
 3. Em cada produto, cole só o token (`AABBJJ`).
 4. O botão **Finalizar compra** monta `.../r/TOKEN1:QTD1,TOKEN2:QTD2`.
+5. Para o 15% off ir junto (inclusive se o cliente incluir mais produtos no checkout da Yampi), crie um cupom de 15% em **Marketing → Cupons** e cole o código em `/panel/config`. O link fica `.../r/TOKEN:QTD?promocode=SEUCUPOM`.
 
 ## EasyPanel
 
