@@ -335,6 +335,22 @@ img { max-width: 100%; display: block; }
 
 .legend-story .logo { margin-top: 8px; }
 
+.slogan {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  font-size: 32px;
+  color: var(--text) !important;
+  margin: 20px 0 4px !important;
+}
+
+.slogan-en {
+  font-size: 13px !important;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--yellow) !important;
+  margin: 0 0 16px !important;
+}
+
 .legend-photos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

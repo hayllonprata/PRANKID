@@ -3,7 +3,7 @@ import { CartProvider } from "@/components/CartProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PRANKID. Rebeldia, liberdade e Sucesso",
+  title: "PRANKID. Liberdade e Sucesso",
   description:
     "A história de um garoto das ruas que pixou o luxo, virou o artista mais respeitado da cidade e nunca esqueceu de onde veio.",
   icons: {

@@ -92,7 +92,7 @@ export const prankidLegendBeats = [
     id: "prankid-14",
     sortOrder: 14,
     title: "Grafitando as frases",
-    caption: "Sempre exibindo sua frase de impacto: Rebeldia, liberdade e Sucesso.",
+    caption: "Sempre exibindo sua frase de impacto: Liberdade e Sucesso.",
   },
   {
     id: "prankid-15",
