@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandLogo } from "@/components/BrandLogo";
 import { api, setToken } from "@/lib/api";
 
 export default function LoginPage() {
@@ -33,7 +34,7 @@ export default function LoginPage() {
     <div className="login-wrap">
       <form className="login-card form-grid" onSubmit={onSubmit}>
         <div>
-          <h1>PRANKID</h1>
+          <BrandLogo href="/" height={52} />
           <p>Acesse o painel para editar a loja.</p>
         </div>
         <label>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { api, clearToken } from "@/lib/api";
 
 export function PanelShell({ children }: { children: React.ReactNode }) {
@@ -44,9 +45,8 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="panel-shell">
       <aside className="panel-side">
-        <div className="logo" style={{ marginBottom: 24 }}>
-          <span className="logo-mark">PK</span>
-          Painel
+        <div style={{ marginBottom: 24 }}>
+          <BrandLogo href="/panel" height={36} />
         </div>
         {links.map(([href, label]) => (
           <Link key={href} href={href} className={pathname === href ? "active" : ""}>
