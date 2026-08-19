@@ -3,8 +3,9 @@ import { CartProvider } from "@/components/CartProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PRANKID — Toy art",
-  description: "Toy art com personalidade. Coleção PRANKID.",
+  title: "PRANKID — Rebeldia, liberdade e Sucesso",
+  description:
+    "A história de um garoto das ruas que pixou o luxo, virou o artista mais respeitado da cidade e nunca esqueceu de onde veio.",
   icons: {
     icon: [{ url: "/favicon.png", type: "image/png" }],
     apple: "/favicon.png",

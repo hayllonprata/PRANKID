@@ -1,6 +1,7 @@
 "use client";
 
 import { formatBRL, mediaUrl, type Product } from "@/lib/api";
+import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 
 export function ProductsSection({ products }: { products: Product[] }) {
@@ -10,8 +11,8 @@ export function ProductsSection({ products }: { products: Product[] }) {
       <div className="wrap">
         <div className="section-head">
           <div>
-            <h2>A coleção</h2>
-            <p>Peças pra estante, pra mesa e pra quem coleciona personalidade.</p>
+            <h2>{siteCopy.productsTitle}</h2>
+            <p>{siteCopy.productsLead}</p>
           </div>
         </div>
         {products.length === 0 ? (

@@ -1,6 +1,7 @@
 import { prisma } from "./prisma.js";
 import { hashPassword } from "./auth.js";
 import { prankidLegendBeats } from "./legend.js";
+import { siteCopy } from "./site-copy.js";
 
 export async function seedIfNeeded() {
   const adminCount = await prisma.admin.count();
@@ -18,24 +19,30 @@ export async function seedIfNeeded() {
 
   await prisma.settings.upsert({
     where: { id: "default" },
-    update: {},
+    update: {
+      footer: siteCopy.footer,
+    },
     create: {
       id: "default",
       whatsapp: "",
       yampiBaseUrl: "",
       instagram: "",
-      footer: "PRANKID — toy art feita pra bagunçar o sério.",
+      footer: siteCopy.footer,
     },
   });
 
   await prisma.hero.upsert({
     where: { id: "default" },
-    update: {},
+    update: {
+      title: siteCopy.heroTitle,
+      subtitle: siteCopy.heroSubtitle,
+      ctaText: siteCopy.heroCta,
+    },
     create: {
       id: "default",
-      title: "PRANKID",
-      subtitle: "Toy art com personalidade. Peças limitadas, humor torto e coleção pra quem não leva a vida tão sério.",
-      ctaText: "Ver coleção",
+      title: siteCopy.heroTitle,
+      subtitle: siteCopy.heroSubtitle,
+      ctaText: siteCopy.heroCta,
       imageUrl: "",
       enabled: true,
     },
@@ -43,12 +50,14 @@ export async function seedIfNeeded() {
 
   await prisma.story.upsert({
     where: { id: "default" },
-    update: {},
+    update: {
+      title: siteCopy.foundersTitle,
+      description: siteCopy.foundersDescription,
+    },
     create: {
       id: "default",
-      title: "A bagunça começou assim",
-      description:
-        "A PRANKID nasceu da vontade de transformar personagens de brincadeira em objetos de coleção. Cada peça mistura humor, cor e um pouco de caos — toy art pra estante, pra mesa e pra quem gosta de arte que pisca o olho.",
+      title: siteCopy.foundersTitle,
+      description: siteCopy.foundersDescription,
       imageUrl: "",
     },
   });
@@ -74,35 +83,24 @@ export async function seedIfNeeded() {
   const productCount = await prisma.product.count();
   if (productCount === 0) {
     await prisma.product.createMany({
-      data: [
-        {
-          name: "PRANKID 001 — O Primeiro",
-          description: "O drop que inaugurou a bagunça. Edição de coleção, acabamento fosco e cara de quem sabe de algo.",
-          price: 189.9,
-          yampiToken: "",
-          sku: "PK-001",
-          sortOrder: 1,
-          active: true,
-        },
-        {
-          name: "PRANKID 002 — Bagunça",
-          description: "Cores gritantes, pose torta e energia de sábado à noite. Peça pra quem coleciona personalidade.",
-          price: 219.9,
-          yampiToken: "",
-          sku: "PK-002",
-          sortOrder: 2,
-          active: true,
-        },
-        {
-          name: "PRANKID 003 — Sorriso Torto",
-          description: "O sorriso que não explica nada e explica tudo. Toy art compacta, pronta pra ocupar a estante.",
-          price: 169.9,
-          yampiToken: "",
-          sku: "PK-003",
-          sortOrder: 3,
-          active: true,
-        },
-      ],
+      data: siteCopy.products.map((product, index) => ({
+        name: product.name,
+        description: product.description,
+        price: [189.9, 219.9, 169.9][index] ?? 189.9,
+        yampiToken: "",
+        sku: product.sku,
+        sortOrder: index + 1,
+        active: true,
+      })),
     });
+  } else {
+    for (const product of siteCopy.products) {
+      const existing = await prisma.product.findFirst({ where: { sku: product.sku } });
+      if (!existing) continue;
+      await prisma.product.update({
+        where: { id: existing.id },
+        data: { name: product.name, description: product.description },
+      });
+    }
   }
 }
