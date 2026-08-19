@@ -4,7 +4,7 @@ import path from "node:path";
 import multer from "multer";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../lib/prisma.js";
-import { transcribeAudioFile } from "../lib/openai-transcribe.js";
+import { fillBriefFromTranscript, transcribeAudioFile } from "../lib/openai-transcribe.js";
 import { publicSettings, serializeProduct } from "../lib/serialize.js";
 import { uploadDir } from "./upload.js";
 
@@ -94,7 +94,8 @@ storeRouter.post("/transcribe", (req, res) => {
         req.file.filename,
         req.file.mimetype,
       );
-      res.json({ text, audioUrl: `/uploads/${req.file.filename}` });
+      const fields = await fillBriefFromTranscript(apiKey, text);
+      res.json({ text, audioUrl: `/uploads/${req.file.filename}`, ...fields });
     } catch (error) {
       if (req.file?.path) fs.unlink(req.file.path, () => undefined);
       const message = error instanceof Error ? error.message : "Falha ao transcrever";

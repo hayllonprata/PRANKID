@@ -557,6 +557,52 @@ img { max-width: 100%; display: block; }
   overflow: auto;
 }
 
+.rec-meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 2px solid #000;
+  background: #160810;
+  color: var(--text);
+}
+
+.rec-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--magenta);
+  animation: rec-blink 1s infinite;
+}
+
+.rec-waves {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 22px;
+}
+
+.rec-waves span {
+  width: 4px;
+  background: var(--yellow);
+  animation: rec-wave 0.9s ease-in-out infinite;
+}
+
+.rec-waves span:nth-child(2) { animation-delay: 0.12s; }
+.rec-waves span:nth-child(3) { animation-delay: 0.24s; }
+.rec-waves span:nth-child(4) { animation-delay: 0.08s; }
+.rec-waves span:nth-child(5) { animation-delay: 0.2s; }
+
+@keyframes rec-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@keyframes rec-wave {
+  0%, 100% { height: 6px; }
+  50% { height: 22px; }
+}
+
 .cart-brief {
   color: var(--muted);
   font-size: 12px;
