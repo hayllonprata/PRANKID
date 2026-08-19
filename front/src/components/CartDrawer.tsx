@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { buildYampiCheckout, formatBRL, mediaUrl } from "@/lib/api";
+import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 
 export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
@@ -39,7 +40,7 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
           </button>
         </div>
         {items.length === 0 ? (
-          <p className="empty">Nada por aqui ainda. Escolhe um PRANKID.</p>
+          <p className="empty">{siteCopy.cartEmpty}</p>
         ) : (
           items.map((item) => (
             <div className="cart-item" key={item.id}>

@@ -1,4 +1,5 @@
 import { mediaUrl, type LegendBeat } from "@/lib/api";
+import { siteCopy } from "@/lib/site-copy";
 import { BrandLogo } from "./BrandLogo";
 
 function storyParagraphs(beats: LegendBeat[]) {
@@ -25,8 +26,8 @@ export function LegendSection({ beats }: { beats: LegendBeat[] }) {
       <div className="wrap">
         <div className="legend-story">
           <div>
-            <p className="kicker">A lenda</p>
-            <h2>A história do PRANKID</h2>
+            <p className="kicker">{siteCopy.legendKicker}</p>
+            <h2>{siteCopy.legendTitle}</h2>
             {paragraphs.map((text, index) => (
               <p key={index}>{text}</p>
             ))}
