@@ -33,6 +33,8 @@ npm run dev
 
 Login inicial (se não alterar as envs): `admin@prankid.com` / `altere-esta-senha`.
 
+`ADMIN_EMAIL` e `ADMIN_PASSWORD` são aplicados **a cada subida** da API (não só na primeira vez). Depois de mudar essas variáveis no EasyPanel, reinicie o serviço do back para o painel aceitar os novos dados.
+
 ## Yampi
 
 1. No painel da Yampi, abra o produto e copie o **link de compra** (`https://seguro.seudominio.com.br/r/AABBJJ`).
@@ -56,6 +58,7 @@ Crie **dois App services** no mesmo repositório, branch `main`.
   - `JWT_SECRET`
   - `ADMIN_EMAIL`
   - `ADMIN_PASSWORD`
+    (o login do painel vem dessas variáveis; depois de alterar, **reinicie o back**)
   - `CORS_ORIGIN` (domínio público do front, com `https://`)
   - `COOKIE_SECURE=true`
   - `PORT=4000`
