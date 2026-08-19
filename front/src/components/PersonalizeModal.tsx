@@ -3,6 +3,12 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { api, type PersonalBrief, type Product } from "@/lib/api";
 
+function formatElapsed(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 export function PersonalizeModal({
   product,
   onCancel,
@@ -18,10 +24,12 @@ export function PersonalizeModal({
   const [transcript, setTranscript] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
   const [recording, setRecording] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const startedAtRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -29,15 +37,34 @@ export function PersonalizeModal({
     };
   }, []);
 
+  useEffect(() => {
+    if (!recording) return;
+    startedAtRef.current = Date.now();
+    setElapsed(0);
+    const timer = window.setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [recording]);
+
   async function transcribeBlob(blob: Blob, filename: string) {
     setBusy(true);
     setError("");
     try {
       const body = new FormData();
       body.append("audio", blob, filename);
-      const result = await api<{ text: string; audioUrl: string }>("/api/store/transcribe", { method: "POST", body });
+      const result = await api<{
+        text: string;
+        audioUrl: string;
+        job?: string;
+        likes?: string;
+        colors?: string;
+      }>("/api/store/transcribe", { method: "POST", body });
       setTranscript(result.text);
       setAudioUrl(result.audioUrl);
+      if (result.job) setJob(result.job);
+      if (result.likes) setLikes(result.likes);
+      if (result.colors) setColors(result.colors);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao transcrever o áudio");
     } finally {
@@ -108,6 +135,19 @@ export function PersonalizeModal({
         </p>
         <div className="form-grid" style={{ marginBottom: 16 }}>
           <p className="muted">Não quer digitar? Fale sobre o que você faz, do que gosta e as cores do seu PRANKID.</p>
+          {recording ? (
+            <div className="rec-meter" aria-live="polite">
+              <span className="rec-dot" />
+              <div className="rec-waves" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+              <strong>Gravando {formatElapsed(elapsed)}</strong>
+            </div>
+          ) : null}
           <div className="row-actions">
             {recording ? (
               <button className="btn magenta" type="button" onClick={stopRecording}>
@@ -123,7 +163,7 @@ export function PersonalizeModal({
               <input type="file" accept="audio/*,video/webm" hidden onChange={(e) => onFile(e.target.files?.[0])} />
             </label>
           </div>
-          {busy ? <p className="muted">Transcrevendo com a OpenAI...</p> : null}
+          {busy ? <p className="muted">Transcrevendo e preenchendo os campos...</p> : null}
           {transcript ? (
             <label>
               Transcrição (pode editar)
@@ -145,7 +185,7 @@ export function PersonalizeModal({
             <textarea value={colors} onChange={(e) => setColors(e.target.value)} placeholder="Amarelo, preto, magenta..." />
           </label>
           {error ? <p className="cart-error">{error}</p> : null}
-          <button className="btn full" type="submit" disabled={busy}>
+          <button className="btn full" type="submit" disabled={busy || recording}>
             Continuar a compra
           </button>
         </form>
