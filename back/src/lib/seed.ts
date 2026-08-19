@@ -19,9 +19,7 @@ export async function seedIfNeeded() {
 
   await prisma.settings.upsert({
     where: { id: "default" },
-    update: {
-      footer: siteCopy.footer,
-    },
+    update: {},
     create: {
       id: "default",
       whatsapp: "",
@@ -31,18 +29,9 @@ export async function seedIfNeeded() {
     },
   });
 
-  await prisma.settings.updateMany({
-    where: { id: "default", instagram: "" },
-    data: { instagram: siteCopy.instagram },
-  });
-
   await prisma.hero.upsert({
     where: { id: "default" },
-    update: {
-      title: siteCopy.heroTitle,
-      subtitle: siteCopy.heroSubtitle,
-      ctaText: siteCopy.heroCta,
-    },
+    update: {},
     create: {
       id: "default",
       title: siteCopy.heroTitle,
@@ -55,10 +44,7 @@ export async function seedIfNeeded() {
 
   await prisma.story.upsert({
     where: { id: "default" },
-    update: {
-      title: siteCopy.foundersTitle,
-      description: siteCopy.foundersDescription,
-    },
+    update: {},
     create: {
       id: "default",
       title: siteCopy.foundersTitle,
@@ -77,11 +63,7 @@ export async function seedIfNeeded() {
         caption: beat.caption,
         imageUrl: "",
       },
-      update: {
-        sortOrder: beat.sortOrder,
-        title: beat.title,
-        caption: beat.caption,
-      },
+      update: {},
     });
   }
 
@@ -98,14 +80,5 @@ export async function seedIfNeeded() {
         active: true,
       })),
     });
-  } else {
-    for (const product of siteCopy.products) {
-      const existing = await prisma.product.findFirst({ where: { sku: product.sku } });
-      if (!existing) continue;
-      await prisma.product.update({
-        where: { id: existing.id },
-        data: { name: product.name, description: product.description },
-      });
-    }
   }
 }
