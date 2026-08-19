@@ -326,6 +326,32 @@ img { max-width: 100%; display: block; }
   gap: 22px;
 }
 
+.products-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.products-track {
+  display: flex;
+  will-change: transform;
+}
+
+.products-track.is-animated {
+  transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.products-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .products-track.is-animated {
+    transition-duration: 0.01ms;
+  }
+}
+
 .card {
   background: var(--bg-2);
   border: 2px solid #000;
