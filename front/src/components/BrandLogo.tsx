@@ -1,3 +1,5 @@
+import { siteCopy } from "@/lib/site-copy";
+
 type BrandLogoProps = {
   href?: string | null;
   className?: string;
@@ -5,17 +7,20 @@ type BrandLogoProps = {
 };
 
 export function BrandLogo({ href = "/", className = "", height = 44 }: BrandLogoProps) {
-  const image = (
-    <img className="logo-img" src="/logo.webp" alt="PRANKID" style={{ height }} />
+  const body = (
+    <>
+      <img className="logo-img" src="/logo.webp" alt="PRANKID" style={{ height }} />
+      <span className="logo-tagline">{siteCopy.sloganEn}</span>
+    </>
   );
 
   if (href === null) {
-    return <span className={`logo ${className}`.trim()}>{image}</span>;
+    return <span className={`logo ${className}`.trim()}>{body}</span>;
   }
 
   return (
     <a className={`logo ${className}`.trim()} href={href} aria-label="PRANKID">
-      {image}
+      {body}
     </a>
   );
 }

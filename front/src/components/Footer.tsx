@@ -1,6 +1,5 @@
 import { BrandLogo } from "@/components/BrandLogo";
 import { instagramLink, type Settings } from "@/lib/api";
-import { siteCopy } from "@/lib/site-copy";
 
 export function Footer({ settings }: { settings: Settings }) {
   return (
@@ -8,8 +7,6 @@ export function Footer({ settings }: { settings: Settings }) {
       <div className="wrap site-footer-inner">
         <div>
           <BrandLogo href="#topo" height={36} />
-          <p>{settings.footer || siteCopy.footerFallback}</p>
-          <p className="slogan-en">{siteCopy.sloganEn}</p>
         </div>
         {settings.instagram ? (
           <a href={instagramLink(settings.instagram)} target="_blank" rel="noreferrer">
