@@ -254,7 +254,9 @@ adminRouter.put("/products/:id/images", async (req, res) => {
     res.status(404).json({ error: "Produto não encontrado" });
     return;
   }
-  const imageIds = Array.isArray(req.body?.imageIds) ? req.body.imageIds.map((item: unknown) => String(item || "").trim()).filter(Boolean) : [];
+  const imageIds: string[] = Array.isArray(req.body?.imageIds)
+    ? req.body.imageIds.map((item: unknown) => String(item ?? "").trim()).filter((id: string) => id.length > 0)
+    : [];
   const existingIds = existing.images.map((img) => img.id);
   const uniqueIds = [...new Set(imageIds)];
   if (
@@ -266,11 +268,11 @@ adminRouter.put("/products/:id/images", async (req, res) => {
     return;
   }
   await prisma.$transaction(
-    imageIds.map((imageId: string, sortOrder: number) =>
+    imageIds.map((imageId, sortOrder) =>
       prisma.productImage.update({ where: { id: imageId }, data: { sortOrder } }),
     ),
   );
-  const ordered = imageIds.map((imageId: string) => existing.images.find((img) => img.id === imageId)!);
+  const ordered = imageIds.map((imageId) => existing.images.find((img) => img.id === imageId)!);
   await prisma.product.update({
     where: { id },
     data: { imageUrl: ordered[0]?.imageUrl || "" },
