@@ -88,6 +88,16 @@ export default function EditProductPage() {
           <span>
             <input
               type="checkbox"
+              checked={product.personalized}
+              onChange={(e) => setProduct({ ...product, personalized: e.target.checked })}
+            />{" "}
+            Produto personalizado (pede briefing na compra)
+          </span>
+        </label>
+        <label>
+          <span>
+            <input
+              type="checkbox"
               checked={product.active}
               onChange={(e) => setProduct({ ...product, active: e.target.checked })}
             />{" "}

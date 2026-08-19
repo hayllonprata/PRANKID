@@ -182,6 +182,7 @@ adminRouter.post("/products", async (req, res) => {
       sku: String(req.body?.sku ?? "").trim(),
       active: req.body?.active !== false,
       sortOrder: Number(req.body?.sortOrder || 0),
+      personalized: Boolean(req.body?.personalized),
     },
   });
   res.status(201).json(serializeProduct(product));
@@ -205,6 +206,7 @@ adminRouter.put("/products/:id", async (req, res) => {
       sku: String(req.body?.sku ?? existing.sku).trim(),
       active: req.body?.active === undefined ? existing.active : Boolean(req.body.active),
       sortOrder: req.body?.sortOrder === undefined ? existing.sortOrder : Number(req.body.sortOrder),
+      personalized: req.body?.personalized === undefined ? existing.personalized : Boolean(req.body.personalized),
     },
   });
   res.json(serializeProduct(product));
@@ -219,4 +221,11 @@ adminRouter.delete("/products/:id", async (req, res) => {
   }
   await prisma.product.delete({ where: { id } });
   res.json({ ok: true });
+});
+
+adminRouter.get("/customizations", async (_req, res) => {
+  const briefs = await prisma.customBrief.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+  res.json(briefs);
 });

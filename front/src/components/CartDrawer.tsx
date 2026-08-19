@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { buildYampiCheckout, formatBRL, mediaUrl } from "@/lib/api";
+import { api, buildYampiCheckout, formatBRL, mediaUrl } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 
 export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
   const { items, total, open, setOpen, setQty, remove } = useCart();
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   if (!open) return null;
 
-  function checkout() {
+  async function checkout() {
     setError("");
     if (items.length === 0) {
       setError("Seu carrinho está vazio.");
@@ -26,7 +27,33 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
       setError(`Cadastre o token Yampi de: ${missing.map((item) => item.name).join(", ")}.`);
       return;
     }
-    window.location.href = buildYampiCheckout(yampiBaseUrl, items);
+    const custom = items.filter((item) => item.personalized);
+    const incomplete = custom.filter((item) => !item.brief?.job || !item.brief?.likes || !item.brief?.colors);
+    if (incomplete.length) {
+      setError("Preencha o briefing das peças personalizadas antes de finalizar.");
+      return;
+    }
+    setBusy(true);
+    try {
+      if (custom.length) {
+        await api("/api/store/customizations", {
+          method: "POST",
+          body: JSON.stringify({
+            items: custom.map((item) => ({
+              productId: item.id,
+              job: item.brief?.job,
+              likes: item.brief?.likes,
+              colors: item.brief?.colors,
+              qty: item.qty,
+            })),
+          }),
+        });
+      }
+      window.location.href = buildYampiCheckout(yampiBaseUrl, items);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível enviar o briefing.");
+      setBusy(false);
+    }
   }
 
   return (
@@ -51,6 +78,12 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
               )}
               <div>
                 <strong>{item.name}</strong>
+                {item.personalized ? <div className="muted">Personalizado</div> : null}
+                {item.brief ? (
+                  <p className="cart-brief">
+                    {item.brief.job} · {item.brief.likes} · {item.brief.colors}
+                  </p>
+                ) : null}
                 <div>{formatBRL(item.price)}</div>
                 <div className="qty">
                   <button type="button" onClick={() => setQty(item.id, item.qty - 1)}>
@@ -75,8 +108,8 @@ export function CartDrawer({ yampiBaseUrl }: { yampiBaseUrl: string }) {
           </div>
           <p className="cart-note">O valor final é confirmado no checkout da Yampi.</p>
           {error ? <p className="cart-error">{error}</p> : null}
-          <button className="btn full" type="button" onClick={checkout} disabled={items.length === 0}>
-            Finalizar compra
+          <button className="btn full" type="button" onClick={checkout} disabled={items.length === 0 || busy}>
+            {busy ? "Enviando..." : "Finalizar compra"}
           </button>
         </div>
       </aside>

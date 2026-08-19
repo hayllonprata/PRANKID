@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import type { Product } from "@/lib/api";
+import type { PersonalBrief, Product } from "@/lib/api";
 
 export type CartItem = {
   id: string;
@@ -10,6 +10,8 @@ export type CartItem = {
   imageUrl: string;
   yampiToken: string;
   qty: number;
+  personalized: boolean;
+  brief?: PersonalBrief;
 };
 
 type CartContextValue = {
@@ -18,7 +20,7 @@ type CartContextValue = {
   total: number;
   open: boolean;
   setOpen: (open: boolean) => void;
-  add: (product: Product) => void;
+  add: (product: Product, brief?: PersonalBrief) => void;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
   clear: () => void;
@@ -56,12 +58,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       total,
       open,
       setOpen,
-      add: (product) => {
+      add: (product, brief) => {
         setItems((current) => {
           const found = current.find((item) => item.id === product.id);
-          if (found) {
+          if (found && !product.personalized) {
             return current.map((item) =>
               item.id === product.id ? { ...item, qty: item.qty + 1 } : item,
+            );
+          }
+          if (found && product.personalized) {
+            return current.map((item) =>
+              item.id === product.id ? { ...item, qty: 1, brief, personalized: true } : item,
             );
           }
           return [
@@ -73,6 +80,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               imageUrl: product.imageUrl,
               yampiToken: product.yampiToken,
               qty: 1,
+              personalized: Boolean(product.personalized),
+              brief,
             },
           ];
         });
@@ -80,7 +89,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       },
       setQty: (id, qty) => {
         setItems((current) =>
-          qty <= 0 ? current.filter((item) => item.id !== id) : current.map((item) => (item.id === id ? { ...item, qty } : item)),
+          current.flatMap((item) => {
+            if (item.id !== id) return [item];
+            if (item.personalized) return [{ ...item, qty: Math.max(1, qty) }];
+            if (qty <= 0) return [];
+            return [{ ...item, qty }];
+          }),
         );
       },
       remove: (id) => setItems((current) => current.filter((item) => item.id !== id)),
