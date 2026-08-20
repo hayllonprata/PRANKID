@@ -10,6 +10,12 @@ export const metadata: Metadata = {
     icon: [{ url: "/favicon.png", type: "image/png" }],
     apple: "/favicon.png",
   },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

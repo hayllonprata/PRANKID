@@ -54,7 +54,7 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="panel-shell">
       <button className="panel-menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -62,8 +62,19 @@ export function PanelShell({ children }: { children: React.ReactNode }) {
       </button>
       {menuOpen && <div className="panel-menu-backdrop" onClick={() => setMenuOpen(false)} />}
       <aside className={`panel-side ${menuOpen ? "panel-side-open" : ""}`}>
-        <div style={{ marginBottom: 24 }}>
-          <BrandLogo href="/panel" height={36} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <BrandLogo href="/panel" height={32} />
+          <button
+            className="panel-menu-close"
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Fechar menu"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         {links.map(([href, label]) => (
           <Link key={href} href={href} className={pathname === href ? "active" : ""}>
