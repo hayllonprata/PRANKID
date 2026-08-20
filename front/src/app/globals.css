@@ -20,9 +20,21 @@
   scrollbar-color: var(--yellow) var(--bg);
 }
 
+/* Prevenir overflow horizontal em todo o site */
+*:not(.panel-card):not(.drawer):not(.zoom-dialog) {
+  max-width: 100%;
+}
+
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
 html {
   scroll-behavior: smooth;
   color-scheme: dark;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 ::-webkit-scrollbar {
@@ -61,6 +73,8 @@ body {
   text-rendering: optimizeLegibility;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -882,11 +896,17 @@ img { max-width: 100%; display: block; }
   transform: scale(0.95);
 }
 
-.panel-main { padding: 28px; }
+.panel-main {
+  padding: 28px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 .panel-main h1 {
   font-family: var(--font-display);
   font-size: 42px;
   margin: 0 0 18px;
+  word-wrap: break-word;
 }
 
 .panel-card {
@@ -895,6 +915,10 @@ img { max-width: 100%; display: block; }
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 16px;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .panel-card h2 {
@@ -902,6 +926,7 @@ img { max-width: 100%; display: block; }
   font-size: 28px;
   margin: 0 0 12px;
   line-height: 1.1;
+  word-wrap: break-word;
 }
 
 .access-stats {
@@ -1221,6 +1246,211 @@ img { max-width: 100%; display: block; }
   100% { background-position: 200% 0; }
 }
 
+/* Cards mobile para página de acessos */
+.access-cards-mobile {
+  display: none;
+}
+
+.access-card-mobile {
+  margin-bottom: 14px;
+}
+
+.access-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.access-card-ip {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--yellow);
+  background: rgba(255, 230, 0, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 230, 0, 0.2);
+}
+
+.access-card-status {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.access-card-status.active {
+  background: rgba(125, 255, 179, 0.15);
+  color: #7dffb3;
+  border: 1px solid rgba(125, 255, 179, 0.3);
+}
+
+.access-card-status.blocked {
+  background: rgba(255, 139, 171, 0.15);
+  color: #ff8fab;
+  border: 1px solid rgba(255, 139, 171, 0.3);
+}
+
+.access-card-info {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.access-card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.access-card-row .label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.access-card-row a {
+  color: var(--cyan);
+  text-decoration: underline;
+}
+
+.access-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.access-card-actions .btn {
+  width: 100%;
+  text-align: center;
+}
+
+/* Cards mobile para página de produtos */
+.product-cards-mobile {
+  display: none;
+}
+
+.product-card-mobile {
+  margin-bottom: 14px;
+}
+
+.product-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.product-card-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  flex: 1;
+}
+
+.product-card-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--yellow);
+  white-space: nowrap;
+}
+
+.product-card-info {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.product-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  border: 1px solid;
+}
+
+.badge.success {
+  background: rgba(125, 255, 179, 0.15);
+  color: #7dffb3;
+  border-color: rgba(125, 255, 179, 0.3);
+}
+
+.badge.muted {
+  background: rgba(161, 161, 170, 0.15);
+  color: var(--muted);
+  border-color: rgba(161, 161, 170, 0.3);
+}
+
+.badge.info {
+  background: rgba(60, 240, 255, 0.15);
+  color: var(--cyan);
+  border-color: rgba(60, 240, 255, 0.3);
+}
+
+.badge.warning {
+  background: rgba(255, 230, 0, 0.15);
+  color: var(--yellow);
+  border-color: rgba(255, 230, 0, 0.3);
+}
+
+.product-card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.product-card-row .label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.product-card-row code {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.product-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.product-card-actions .btn {
+  width: 100%;
+  text-align: center;
+}
+
 @media (max-width: 900px) {
   /* Ajustes da loja pública */
   .hero, .story, .grid-products {
@@ -1340,32 +1570,27 @@ img { max-width: 100%; display: block; }
     text-align: center;
   }
   
-  /* Tabelas com scroll horizontal */
-  .panel-card:has(.table) {
+  /* Tabelas - permitir scroll quando necessário mas preferir cards */
+  .table {
+    font-size: 13px;
+    width: 100%;
+    display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
   
-  .table {
-    font-size: 13px;
+  .table thead,
+  .table tbody,
+  .table tr {
+    display: table;
     width: 100%;
-    min-width: 600px;
+    table-layout: auto;
   }
   
   .table th, .table td {
-    padding: 10px 8px;
+    padding: 8px 6px;
     white-space: nowrap;
-  }
-  
-  /* Indicador visual de scroll horizontal */
-  .panel-card:has(.table)::after {
-    content: "";
-    position: sticky;
-    right: 0;
-    width: 20px;
-    height: 100%;
-    background: linear-gradient(to left, rgba(22, 22, 28, 0.95), transparent);
-    pointer-events: none;
+    font-size: 12px;
   }
   
   /* Formulários otimizados para mobile */
@@ -1405,6 +1630,17 @@ img { max-width: 100%; display: block; }
   .image-gallery-item {
     width: 100px;
     height: 100px;
+  }
+  
+  /* Trocar tabela por cards em mobile */
+  .access-table-desktop,
+  .product-table-desktop {
+    display: none;
+  }
+  
+  .access-cards-mobile,
+  .product-cards-mobile {
+    display: block;
   }
 }
 

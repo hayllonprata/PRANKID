@@ -116,7 +116,8 @@ export default function AccessesPage() {
         </article>
       </div>
 
-      <div className="panel-card" style={{ overflowX: "auto" }}>
+      {/* Tabela para desktop */}
+      <div className="panel-card access-table-desktop">
         <table className="table">
           <thead>
             <tr>
@@ -175,6 +176,72 @@ export default function AccessesPage() {
             })}
           </tbody>
         </table>
+        {report && report.accesses.length === 0 ? <p className="muted">Nenhum acesso registrado ainda.</p> : null}
+      </div>
+
+      {/* Cards para mobile */}
+      <div className="access-cards-mobile">
+        {(report?.accesses || []).map((access) => {
+          const map = mapsUrl(access);
+          return (
+            <article key={access.id} className="panel-card access-card-mobile">
+              <div className="access-card-header">
+                <code className="access-card-ip">{access.ip}</code>
+                <span className={`access-card-status ${access.blocked ? "blocked" : "active"}`}>
+                  {access.blocked ? "bloqueado" : "liberado"}
+                </span>
+              </div>
+              
+              <div className="access-card-info">
+                <div className="access-card-row">
+                  <span className="label">Localização:</span>
+                  <span>
+                    {formatLocation(access)}
+                    {map ? (
+                      <>
+                        {" "}
+                        <a href={map} target="_blank" rel="noreferrer">
+                          ver mapa
+                        </a>
+                      </>
+                    ) : null}
+                  </span>
+                </div>
+                <div className="access-card-row">
+                  <span className="label">Acessos:</span>
+                  <span>{access.visitCount}</span>
+                </div>
+                <div className="access-card-row">
+                  <span className="label">Primeiro:</span>
+                  <span>{formatWhen(access.firstSeenAt)}</span>
+                </div>
+                <div className="access-card-row">
+                  <span className="label">Último:</span>
+                  <span>{formatWhen(access.lastSeenAt)}</span>
+                </div>
+              </div>
+
+              <div className="access-card-actions">
+                <button
+                  className="btn sm"
+                  type="button"
+                  disabled={busyId === access.id}
+                  onClick={() => toggleBlock(access)}
+                >
+                  {access.blocked ? "Liberar" : "Bloquear"}
+                </button>
+                <button
+                  className="btn sm magenta"
+                  type="button"
+                  disabled={busyId === access.id}
+                  onClick={() => setPending(access)}
+                >
+                  Excluir
+                </button>
+              </div>
+            </article>
+          );
+        })}
         {report && report.accesses.length === 0 ? <p className="muted">Nenhum acesso registrado ainda.</p> : null}
       </div>
       <ConfirmModal

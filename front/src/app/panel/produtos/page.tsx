@@ -47,7 +47,9 @@ export default function ProductsListPage() {
         </Link>
       </div>
       {error ? <p className="msg err">{error}</p> : null}
-      <div className="panel-card">
+      
+      {/* Tabela para desktop */}
+      <div className="panel-card product-table-desktop">
         <table className="table">
           <thead>
             <tr>
@@ -81,6 +83,43 @@ export default function ProductsListPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards para mobile */}
+      <div className="product-cards-mobile">
+        {products.map((product) => (
+          <article key={product.id} className="panel-card product-card-mobile">
+            <div className="product-card-header">
+              <h3>{product.name}</h3>
+              <span className="product-card-price">{formatBRL(product.price)}</span>
+            </div>
+            
+            <div className="product-card-info">
+              <div className="product-card-badges">
+                {product.active && <span className="badge success">Ativo</span>}
+                {!product.active && <span className="badge muted">Inativo</span>}
+                {product.personalized && <span className="badge info">Personalizado</span>}
+                {product.cartOffer && <span className="badge warning">No carrinho</span>}
+              </div>
+              
+              {product.yampiToken && (
+                <div className="product-card-row">
+                  <span className="label">Token Yampi:</span>
+                  <code>{product.yampiToken}</code>
+                </div>
+              )}
+            </div>
+
+            <div className="product-card-actions">
+              <Link className="btn sm" href={`/panel/produtos/${product.id}`}>
+                Editar
+              </Link>
+              <button className="btn sm magenta" type="button" onClick={() => setPendingId(product.id)}>
+                Excluir
+              </button>
+            </div>
+          </article>
+        ))}
       </div>
       <ConfirmModal
         open={Boolean(pendingId)}
