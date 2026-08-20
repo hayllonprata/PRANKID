@@ -780,6 +780,22 @@ img { max-width: 100%; display: block; }
   position: relative;
 }
 
+/* Prevenir flash do menu em mobile - aplicar antes do JS carregar */
+@media (max-width: 900px) {
+  .panel-shell {
+    grid-template-columns: 1fr;
+  }
+  
+  .panel-shell .panel-side {
+    position: fixed;
+    transform: translateX(-100%);
+  }
+  
+  .panel-shell .panel-menu-toggle {
+    display: flex;
+  }
+}
+
 .panel-menu-toggle {
   display: none;
   position: fixed;
@@ -804,6 +820,11 @@ img { max-width: 100%; display: block; }
   box-shadow: 2px 2px 0 #000;
 }
 
+.panel-menu-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .panel-menu-backdrop {
   display: none;
   position: fixed;
@@ -817,6 +838,8 @@ img { max-width: 100%; display: block; }
   border-right: 1px solid var(--line);
   padding: 22px 16px;
   background: #121218;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-side a, .panel-side button.link {
@@ -1233,7 +1256,7 @@ img { max-width: 100%; display: block; }
     display: block;
   }
   
-  /* Menu lateral como drawer */
+  /* Menu lateral como drawer - SEMPRE escondido por padrão em mobile */
   .panel-side {
     position: fixed;
     top: 0;
@@ -1243,15 +1266,16 @@ img { max-width: 100%; display: block; }
     z-index: 90;
     border-right: 3px solid #000;
     box-shadow: 12px 0 32px rgba(0,0,0,0.6);
-    transform: translateX(-100%);
+    transform: translateX(-100%) !important;
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 20px 18px;
+    will-change: transform;
   }
   
   .panel-side-open {
-    transform: translateX(0);
+    transform: translateX(0) !important;
   }
   
   .panel-side a, .panel-side button.link {
