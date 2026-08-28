@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ConfirmModal } from "@/components/panel/ConfirmModal";
-import { api, formatBRL, mediaUrl, productGallery, type Product } from "@/lib/api";
+import { api, editionTag, formatBRL, mediaUrl, productGallery, type Product } from "@/lib/api";
 
 function coverSrc(product: Product) {
   return mediaUrl(productGallery(product)[0] || product.imageUrl);
@@ -286,7 +286,13 @@ export default function ProductsListPage() {
                   ) : null}
                 </td>
                 <td>{formatBRL(product.price)}</td>
-                <td>{product.stock <= 0 ? "esgotado" : product.stock}</td>
+                <td>
+                  {product.editionSize > 0
+                    ? editionTag(product)
+                    : product.stock <= 0
+                      ? "esgotado"
+                      : product.stock}
+                </td>
                 <td>{product.yampiToken || "—"}</td>
                 <td>{product.active ? "sim" : "não"}</td>
                 <td>{product.personalized ? "sim" : "não"}</td>
@@ -346,7 +352,8 @@ export default function ProductsListPage() {
                 {product.active && <span className="badge success">Ativo</span>}
                 {!product.active && <span className="badge muted">Inativo</span>}
                 {product.stock <= 0 && <span className="badge danger">Esgotado</span>}
-                {product.stock > 0 && <span className="badge info">{product.stock} un.</span>}
+                {product.stock > 0 && !product.editionSize && <span className="badge info">{product.stock} un.</span>}
+                {product.editionSize > 0 && <span className="badge warning">{editionTag(product)}</span>}
                 {product.personalized && <span className="badge info">Personalizado</span>}
                 {product.hasSizes && <span className="badge warning">Tamanhos</span>}
                 {product.cartOffer && <span className="badge warning">No carrinho</span>}

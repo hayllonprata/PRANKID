@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatBRL, isSoldOut, mediaUrl, productGallery, type Product } from "@/lib/api";
+import { editionTag, formatBRL, isSoldOut, mediaUrl, productGallery, type Product } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
@@ -22,12 +22,14 @@ function ProductCard({
   const photos = productGallery(product);
   const src = mediaUrl(photos[0] || product.imageUrl);
   const soldOut = isSoldOut(product);
+  const limited = editionTag(product);
   return (
     <article className="card product-card" onClick={() => onOpen(product)}>
       <div className="card-media">
         {src ? <img src={src} alt={product.name} /> : <div className="placeholder-toy" />}
         {product.personalized ? <span className="card-tag">Personalizado</span> : null}
         {product.hasSizes && !product.personalized ? <span className="card-tag">Tamanhos</span> : null}
+        {limited ? <span className="card-tag edition">{limited}</span> : null}
         {photos.length > 1 ? <span className="card-photos">{photos.length} fotos</span> : null}
       </div>
       <div className="card-body">

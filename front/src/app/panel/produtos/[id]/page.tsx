@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { api, type Product } from "@/lib/api";
+import { api, editionTag, type Product } from "@/lib/api";
 import { ProductImagesField } from "@/components/panel/ProductImagesField";
 import { SizeChart } from "@/components/SizeChart";
 
@@ -73,7 +73,21 @@ export default function EditProductPage() {
             value={product.stock ?? 0}
             onChange={(e) => setProduct({ ...product, stock: Number(e.target.value) })}
           />
-          <span className="field-hint">0 deixa o produto visível na loja com a tarja ESGOTADO.</span>
+          <span className="field-hint">Peças ainda disponíveis. 0 deixa o produto visível com a tarja ESGOTADO.</span>
+        </label>
+        <label>
+          Tiragem da edição
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={product.editionSize ?? 0}
+            onChange={(e) => setProduct({ ...product, editionSize: Number(e.target.value) })}
+          />
+          <span className="field-hint">
+            0 esconde a tag. A vitrine mostra vendidos / tiragem, ou seja estoque 77 e tiragem 77 vira 0 / 77.
+            {editionTag(product) ? ` Tag atual: ${editionTag(product)}.` : ""}
+          </span>
         </label>
         <label>
           Token Yampi

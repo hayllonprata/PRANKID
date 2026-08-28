@@ -12,6 +12,7 @@ export default function NewProductPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("0");
   const [stock, setStock] = useState("0");
+  const [editionSize, setEditionSize] = useState("0");
   const [images, setImages] = useState<ProductImage[]>([]);
   const [yampiToken, setYampiToken] = useState("");
   const [sku, setSku] = useState("");
@@ -32,6 +33,7 @@ export default function NewProductPage() {
           description,
           price: Number(price),
           stock: Number(stock),
+          editionSize: Number(editionSize),
           imageUrl: images[0]?.imageUrl || "",
           images: images.map((img) => img.imageUrl),
           yampiToken,
@@ -67,7 +69,14 @@ export default function NewProductPage() {
         <label>
           Estoque
           <input type="number" min="0" step="1" value={stock} onChange={(e) => setStock(e.target.value)} />
-          <span className="field-hint">0 deixa o produto visível na loja com a tarja ESGOTADO.</span>
+          <span className="field-hint">Peças ainda disponíveis. 0 deixa o produto visível com a tarja ESGOTADO.</span>
+        </label>
+        <label>
+          Tiragem da edição
+          <input type="number" min="0" step="1" value={editionSize} onChange={(e) => setEditionSize(e.target.value)} />
+          <span className="field-hint">
+            0 esconde a tag. Ex.: estoque 77 e tiragem 77 mostra 0 / 77 na vitrine. Se o estoque estiver 0, a tiragem vira o estoque inicial.
+          </span>
         </label>
         <label>
           Token Yampi

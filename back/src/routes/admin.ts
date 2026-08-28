@@ -7,7 +7,7 @@ import {
   replaceProductImages,
 } from "../lib/product-images.js";
 import { serializeAdminSettings, serializeProduct } from "../lib/serialize.js";
-import { parseStock } from "../lib/stock.js";
+import { parseEditionSize, parseStock, remainingStock } from "../lib/stock.js";
 import { requireAuth } from "../middleware/auth.js";
 
 function nextCopyName(name: string, taken: string[]) {
@@ -257,6 +257,10 @@ adminRouter.post("/products", async (req, res) => {
     req.body?.sortOrder === undefined || req.body?.sortOrder === null || req.body?.sortOrder === ""
       ? nextOrder
       : Number(req.body.sortOrder);
+  const editionSize = parseEditionSize(req.body?.editionSize, 0);
+  let stock = parseStock(req.body?.stock, 0);
+  if (editionSize > 0 && stock === 0) stock = editionSize;
+  stock = remainingStock(stock, editionSize);
   const product = await prisma.product.create({
     data: {
       name,
@@ -270,7 +274,8 @@ adminRouter.post("/products", async (req, res) => {
       personalized: Boolean(req.body?.personalized),
       cartOffer: Boolean(req.body?.cartOffer),
       hasSizes: Boolean(req.body?.hasSizes),
-      stock: parseStock(req.body?.stock, 0),
+      stock,
+      editionSize,
       images: {
         create: urls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
       },
@@ -318,6 +323,7 @@ adminRouter.post("/products/:id/duplicate", async (req, res) => {
       cartOffer: existing.cartOffer,
       hasSizes: existing.hasSizes,
       stock: existing.stock,
+      editionSize: existing.editionSize,
       images: {
         create: uniqueUrls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
       },
@@ -349,7 +355,14 @@ adminRouter.put("/products/:id", async (req, res) => {
       personalized: req.body?.personalized === undefined ? existing.personalized : Boolean(req.body.personalized),
       cartOffer: req.body?.cartOffer === undefined ? existing.cartOffer : Boolean(req.body.cartOffer),
       hasSizes: req.body?.hasSizes === undefined ? existing.hasSizes : Boolean(req.body.hasSizes),
-      stock: req.body?.stock === undefined ? existing.stock : parseStock(req.body.stock, existing.stock),
+      stock: remainingStock(
+        req.body?.stock === undefined ? existing.stock : parseStock(req.body.stock, existing.stock),
+        req.body?.editionSize === undefined ? existing.editionSize : parseEditionSize(req.body.editionSize, existing.editionSize),
+      ),
+      editionSize:
+        req.body?.editionSize === undefined
+          ? existing.editionSize
+          : parseEditionSize(req.body.editionSize, existing.editionSize),
     },
   });
   if (urls) await replaceProductImages(id, urls);

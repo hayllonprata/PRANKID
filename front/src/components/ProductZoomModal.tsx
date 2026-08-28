@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { mediaUrl, productGallery, type Product } from "@/lib/api";
+import { mediaUrl, productGallery, editionTag, type Product } from "@/lib/api";
 
 export function ProductZoomModal({ product, onClose }: { product: Product; onClose: () => void }) {
   const photos = useMemo(() => productGallery(product).map(mediaUrl).filter(Boolean), [product]);
@@ -33,7 +33,10 @@ export function ProductZoomModal({ product, onClose }: { product: Product; onClo
       <div className="zoom-modal" role="dialog" aria-modal="true" aria-label={product.name}>
         <div className="zoom-dialog">
           <div className="card-row">
-            <h2>{product.name}</h2>
+            <h2>
+              {product.name}
+              {editionTag(product) ? <span className="card-tag edition zoom-edition">{editionTag(product)}</span> : null}
+            </h2>
             <button className="btn ghost" type="button" onClick={onClose}>
               Fechar
             </button>

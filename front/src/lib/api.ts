@@ -19,6 +19,7 @@ export type Product = {
   cartOffer: boolean;
   hasSizes: boolean;
   stock: number;
+  editionSize: number;
 };
 
 export type Hero = {
@@ -165,6 +166,19 @@ export function productStock(product: { stock?: number | null }) {
 
 export function isSoldOut(product: { stock?: number | null }) {
   return product.stock != null && productStock(product) <= 0;
+}
+
+export function editionSold(product: { stock?: number | null; editionSize?: number | null }) {
+  const total = Math.max(0, Math.floor(Number(product.editionSize || 0)));
+  if (total <= 0) return 0;
+  const remaining = productStock({ stock: product.stock ?? 0 });
+  return Math.min(total, Math.max(0, total - remaining));
+}
+
+export function editionTag(product: { stock?: number | null; editionSize?: number | null }) {
+  const total = Math.max(0, Math.floor(Number(product.editionSize || 0)));
+  if (total <= 0) return "";
+  return `${editionSold(product)} / ${total}`;
 }
 
 export function cartQtyForProduct(
