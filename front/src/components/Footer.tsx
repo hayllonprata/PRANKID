@@ -20,7 +20,7 @@ export function Footer({ settings }: { settings: Settings }) {
     <footer className="site-footer">
       <div className="wrap site-footer-inner">
         <div>
-          <BrandLogo href="#topo" height={36} />
+          <BrandLogo href="#topo" height={36} showTagline={false} />
         </div>
         <div className="footer-social">
           <a
