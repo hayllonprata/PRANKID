@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { isSoldOut, mediaUrl, productGallery, type Product } from "@/lib/api";
-import { SoldOutBanner } from "./SoldOutBanner";
+import { mediaUrl, productGallery, type Product } from "@/lib/api";
 
 export function ProductZoomModal({ product, onClose }: { product: Product; onClose: () => void }) {
   const photos = useMemo(() => productGallery(product).map(mediaUrl).filter(Boolean), [product]);
@@ -39,9 +38,8 @@ export function ProductZoomModal({ product, onClose }: { product: Product; onClo
               Fechar
             </button>
           </div>
-          <div className={`zoom-stage${isSoldOut(product) ? " is-sold-out" : ""}`}>
+          <div className="zoom-stage">
             {current ? <img src={current} alt={product.name} /> : <div className="placeholder-toy" />}
-            {isSoldOut(product) ? <SoldOutBanner /> : null}
           </div>
           {photos.length > 1 ? (
             <div className="zoom-thumbs">

@@ -416,31 +416,6 @@ img { max-width: 100%; display: block; }
   object-fit: cover;
 }
 
-.card-media.is-sold-out img,
-.zoom-stage.is-sold-out img {
-  filter: grayscale(0.45) brightness(0.55);
-}
-
-.sold-out-banner {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  left: -18%;
-  width: 136%;
-  transform: translateY(-50%) rotate(-16deg);
-  background: var(--magenta);
-  color: #fff;
-  border: 3px solid #000;
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: clamp(22px, 4.2vw, 34px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 6px 0 4px;
-  box-shadow: 4px 4px 0 #000;
-  pointer-events: none;
-}
-
 .card-tag {
   position: absolute;
   left: 10px;
