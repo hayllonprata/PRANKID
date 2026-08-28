@@ -566,7 +566,9 @@ img { max-width: 100%; display: block; }
   margin: 0 0 16px;
 }
 
-.legend-story .logo { margin-top: 8px; }
+.legend-story p:not(.kicker):last-child {
+  margin-bottom: 0;
+}
 
 .slogan {
   font-family: var(--font-display);

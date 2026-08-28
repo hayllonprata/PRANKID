@@ -1,6 +1,5 @@
 import { type Legend } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
-import { BrandLogo } from "./BrandLogo";
 
 export function LegendSection({ legend }: { legend: Legend | null }) {
   if (!legend) return null;
@@ -19,7 +18,6 @@ export function LegendSection({ legend }: { legend: Legend | null }) {
             {paragraphs.map((text, index) => (
               <p key={index}>{text}</p>
             ))}
-            <BrandLogo href={null} height={56} />
           </div>
         </div>
       </div>
