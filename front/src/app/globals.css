@@ -82,6 +82,10 @@ button, input, textarea, select {
   -webkit-appearance: none;
   appearance: none;
 }
+input[type="checkbox"] {
+  -webkit-appearance: checkbox;
+  appearance: auto;
+}
 input, textarea, select {
   font-size: max(16px, 1em);
 }
@@ -1025,6 +1029,7 @@ img { max-width: 100%; display: block; }
   height: 18px;
   flex-shrink: 0;
   cursor: pointer;
+  accent-color: var(--yellow);
 }
 .form-grid input:not([type="checkbox"]):not([type="file"]), .form-grid textarea, .form-grid select {
   background: #0c0c10;
@@ -1521,6 +1526,10 @@ img { max-width: 100%; display: block; }
 .product-card-actions .btn {
   width: 100%;
   text-align: center;
+}
+
+.product-card-actions .btn:first-child {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 900px) {

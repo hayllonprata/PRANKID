@@ -95,8 +95,9 @@ export default function NewProductPage() {
         </label>
         <label>
           <span>
-            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Ativo
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Ativo na vitrine
           </span>
+          <span className="field-hint">Desmarque para criar o produto escondido da loja.</span>
         </label>
         {error ? <p className="msg err">{error}</p> : null}
         <button className="btn" type="submit">

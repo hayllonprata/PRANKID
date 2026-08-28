@@ -140,8 +140,9 @@ export default function EditProductPage() {
               checked={product.active}
               onChange={(e) => setProduct({ ...product, active: e.target.checked })}
             />{" "}
-            Ativo
+            Ativo na vitrine
           </span>
+          <span className="field-hint">Desmarque para esconder o produto da loja sem excluir.</span>
         </label>
         {msg ? <p className="msg ok">{msg}</p> : null}
         {error ? <p className="msg err">{error}</p> : null}

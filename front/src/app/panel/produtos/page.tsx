@@ -10,6 +10,7 @@ export default function ProductsListPage() {
   const [error, setError] = useState("");
   const [pendingId, setPendingId] = useState("");
   const [busy, setBusy] = useState(false);
+  const [togglingId, setTogglingId] = useState("");
 
   async function load() {
     try {
@@ -22,6 +23,23 @@ export default function ProductsListPage() {
   useEffect(() => {
     load();
   }, []);
+
+  async function toggleActive(product: Product) {
+    if (togglingId || busy) return;
+    setTogglingId(product.id);
+    setError("");
+    try {
+      const saved = await api<Product>(`/api/admin/products/${product.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ active: !product.active }),
+      });
+      setProducts((list) => list.map((item) => (item.id === saved.id ? saved : item)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao atualizar");
+    } finally {
+      setTogglingId("");
+    }
+  }
 
   async function confirmRemove() {
     if (!pendingId) return;
@@ -38,6 +56,28 @@ export default function ProductsListPage() {
     }
   }
 
+  function productActions(product: Product) {
+    const toggling = togglingId === product.id;
+    return (
+      <>
+        <button
+          className="btn sm ghost"
+          type="button"
+          disabled={toggling || busy}
+          onClick={() => toggleActive(product)}
+        >
+          {toggling ? "Salvando..." : product.active ? "Desativar" : "Ativar"}
+        </button>
+        <Link className="btn sm" href={`/panel/produtos/${product.id}`}>
+          Editar
+        </Link>
+        <button className="btn sm magenta" type="button" onClick={() => setPendingId(product.id)}>
+          Excluir
+        </button>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="card-row">
@@ -46,6 +86,7 @@ export default function ProductsListPage() {
           Novo produto
         </Link>
       </div>
+      <p className="muted">Desative para esconder o produto da vitrine sem excluir.</p>
       {error ? <p className="msg err">{error}</p> : null}
       
       {/* Tabela para desktop */}
@@ -73,14 +114,7 @@ export default function ProductsListPage() {
                 <td>{product.active ? "sim" : "não"}</td>
                 <td>{product.personalized ? "sim" : "não"}</td>
                 <td>{product.cartOffer ? "sim" : "não"}</td>
-                <td className="row-actions">
-                  <Link className="btn sm" href={`/panel/produtos/${product.id}`}>
-                    Editar
-                  </Link>
-                  <button className="btn sm magenta" type="button" onClick={() => setPendingId(product.id)}>
-                    Excluir
-                  </button>
-                </td>
+                <td className="row-actions">{productActions(product)}</td>
               </tr>
             ))}
           </tbody>
@@ -114,14 +148,7 @@ export default function ProductsListPage() {
               )}
             </div>
 
-            <div className="product-card-actions">
-              <Link className="btn sm" href={`/panel/produtos/${product.id}`}>
-                Editar
-              </Link>
-              <button className="btn sm magenta" type="button" onClick={() => setPendingId(product.id)}>
-                Excluir
-              </button>
-            </div>
+            <div className="product-card-actions">{productActions(product)}</div>
           </article>
         ))}
       </div>
