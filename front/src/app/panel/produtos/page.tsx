@@ -35,6 +35,7 @@ export default function ProductsListPage() {
   const [pendingId, setPendingId] = useState("");
   const [busy, setBusy] = useState(false);
   const [togglingId, setTogglingId] = useState("");
+  const [duplicatingId, setDuplicatingId] = useState("");
   const [reordering, setReordering] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
@@ -78,7 +79,7 @@ export default function ProductsListPage() {
   }
 
   async function moveBy(index: number, delta: number) {
-    if (reordering || busy) return;
+    if (reordering || busy || duplicatingId) return;
     const next = moveProduct(productsRef.current, index, index + delta);
     if (next === productsRef.current) return;
     await persistOrder(next);
@@ -89,13 +90,13 @@ export default function ProductsListPage() {
     const from = dragIndex;
     setDragIndex(null);
     setOverIndex(null);
-    if (from === to || reordering || busy) return;
+    if (from === to || reordering || busy || duplicatingId) return;
     const next = moveProduct(productsRef.current, from, to);
     await persistOrder(next);
   }
 
   async function toggleActive(product: Product) {
-    if (togglingId || busy || reordering) return;
+    if (togglingId || duplicatingId || busy || reordering) return;
     setTogglingId(product.id);
     setError("");
     try {
@@ -115,6 +116,20 @@ export default function ProductsListPage() {
     }
   }
 
+  async function duplicateProduct(product: Product) {
+    if (duplicatingId || togglingId || busy || reordering) return;
+    setDuplicatingId(product.id);
+    setError("");
+    try {
+      await api(`/api/admin/products/${product.id}/duplicate`, { method: "POST" });
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao duplicar");
+    } finally {
+      setDuplicatingId("");
+    }
+  }
+
   async function confirmRemove() {
     if (!pendingId) return;
     setBusy(true);
@@ -131,7 +146,7 @@ export default function ProductsListPage() {
   }
 
   function orderControls(index: number) {
-    const locked = reordering || busy;
+    const locked = reordering || busy || Boolean(duplicatingId);
     return (
       <div className="order-controls">
         <span className="order-index" aria-label={`Posição ${index + 1}`}>
@@ -161,7 +176,7 @@ export default function ProductsListPage() {
 
   function productActions(product: Product) {
     const toggling = togglingId === product.id;
-    const locked = toggling || busy || reordering;
+    const locked = toggling || Boolean(duplicatingId) || busy || reordering;
     return (
       <>
         <button
@@ -171,6 +186,14 @@ export default function ProductsListPage() {
           onClick={() => toggleActive(product)}
         >
           {toggling ? "Salvando..." : product.active ? "Desativar" : "Ativar"}
+        </button>
+        <button
+          className="btn sm ghost"
+          type="button"
+          disabled={locked}
+          onClick={() => duplicateProduct(product)}
+        >
+          {duplicatingId === product.id ? "Duplicando..." : "Duplicar"}
         </button>
         <Link className="btn sm" href={`/panel/produtos/${product.id}`}>
           Editar

@@ -1538,10 +1538,6 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 
-.product-card-actions .btn:first-child {
-  grid-column: 1 / -1;
-}
-
 .order-cell,
 .product-card-order,
 .order-controls {

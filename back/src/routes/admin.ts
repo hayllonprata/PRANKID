@@ -10,6 +10,30 @@ import { serializeAdminSettings, serializeProduct } from "../lib/serialize.js";
 import { parseStock } from "../lib/stock.js";
 import { requireAuth } from "../middleware/auth.js";
 
+function nextCopyName(name: string, taken: string[]) {
+  const base = name.replace(/\s*\(cópia(?: \d+)?\)\s*$/i, "").trim() || name;
+  const used = new Set(taken);
+  let candidate = `${base} (cópia)`;
+  let n = 2;
+  while (used.has(candidate)) {
+    candidate = `${base} (cópia ${n})`;
+    n += 1;
+  }
+  return candidate;
+}
+
+function nextCopySku(sku: string, taken: string[]) {
+  const base = sku.replace(/-copia(?:-\d+)?$/i, "").trim() || sku;
+  const used = new Set(taken.filter(Boolean));
+  let candidate = `${base}-copia`;
+  let n = 2;
+  while (used.has(candidate)) {
+    candidate = `${base}-copia-${n}`;
+    n += 1;
+  }
+  return candidate;
+}
+
 export const adminRouter = Router();
 
 adminRouter.use(requireAuth);
@@ -248,6 +272,52 @@ adminRouter.post("/products", async (req, res) => {
       stock: parseStock(req.body?.stock, 0),
       images: {
         create: urls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
+      },
+    },
+    include: productImageInclude,
+  });
+  res.status(201).json(serializeProduct(product));
+});
+
+adminRouter.post("/products/:id/duplicate", async (req, res) => {
+  const id = String(req.params.id);
+  const existing = await getProductWithImages(id);
+  if (!existing) {
+    res.status(404).json({ error: "Produto não encontrado" });
+    return;
+  }
+  const siblings = await prisma.product.findMany({ select: { name: true, sku: true } });
+  const last = await prisma.product.aggregate({ _max: { sortOrder: true } });
+  const imageUrls = [
+    ...existing.images.map((img) => img.imageUrl),
+    existing.imageUrl,
+  ]
+    .map((url) => String(url || "").trim())
+    .filter(Boolean);
+  const uniqueUrls = [...new Set(imageUrls)];
+  const product = await prisma.product.create({
+    data: {
+      name: nextCopyName(
+        existing.name,
+        siblings.map((item) => item.name),
+      ),
+      description: existing.description,
+      price: existing.price,
+      imageUrl: uniqueUrls[0] || "",
+      yampiToken: existing.yampiToken,
+      sku: existing.sku
+        ? nextCopySku(
+            existing.sku,
+            siblings.map((item) => item.sku),
+          )
+        : "",
+      active: existing.active,
+      sortOrder: (last._max.sortOrder ?? -1) + 1,
+      personalized: existing.personalized,
+      cartOffer: existing.cartOffer,
+      stock: existing.stock,
+      images: {
+        create: uniqueUrls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
       },
     },
     include: productImageInclude,
