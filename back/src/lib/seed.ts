@@ -105,6 +105,7 @@ export async function seedIfNeeded() {
         sku: product.sku,
         sortOrder: index + 1,
         active: true,
+        stock: 5,
       })),
     });
   }

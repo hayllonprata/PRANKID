@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api, buildYampiCheckout, formatBRL, mediaUrl, type Product } from "@/lib/api";
+import { api, buildYampiCheckout, cartQtyForProduct, formatBRL, isSoldOut, mediaUrl, productStock, type Product } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
@@ -20,12 +20,21 @@ export function CartDrawer({
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<Product | null>(null);
 
+  function atStockLimit(item: { id: string; productId: string; qty: number }) {
+    const live = products.find((product) => product.id === item.productId);
+    if (!live) return false;
+    const max = productStock(live) - cartQtyForProduct(items, item.productId, item.id);
+    return item.qty >= max;
+  }
+
   const offers = products.filter((product) => {
-    if (!product.cartOffer) return false;
-    return !items.some((item) => item.fromOffer && item.productId === product.id);
+    if (!product.cartOffer || isSoldOut(product)) return false;
+    if (items.some((item) => item.fromOffer && item.productId === product.id)) return false;
+    return cartQtyForProduct(items, product.id) < productStock(product);
   });
 
   function addOffer(product: Product) {
+    if (isSoldOut(product)) return;
     if (product.personalized) {
       setPending(product);
       return;
@@ -52,6 +61,15 @@ export function CartDrawer({
     const missing = withTokens.filter((item) => !item.yampiToken);
     if (missing.length) {
       setError(`Cadastre o token Yampi de: ${missing.map((item) => item.name).join(", ")}.`);
+      return;
+    }
+    const soldOut = withTokens.filter((item) => {
+      const live = products.find((product) => product.id === item.productId);
+      if (!live) return false;
+      return isSoldOut(live) || cartQtyForProduct(withTokens, item.productId) > productStock(live);
+    });
+    if (soldOut.length) {
+      setError(`Sem estoque para: ${[...new Set(soldOut.map((item) => item.name))].join(", ")}.`);
       return;
     }
     const custom = items.filter((item) => item.personalized);
@@ -133,7 +151,11 @@ export function CartDrawer({
                     −
                   </button>
                   <span>{item.qty}</span>
-                  <button type="button" onClick={() => setQty(item.id, item.qty + 1)}>
+                  <button
+                    type="button"
+                    disabled={atStockLimit(item)}
+                    onClick={() => setQty(item.id, item.qty + 1)}
+                  >
                     +
                   </button>
                 </div>

@@ -55,6 +55,7 @@ export default function ProductsListPage() {
             <tr>
               <th>Nome</th>
               <th>Preço</th>
+              <th>Estoque</th>
               <th>Token Yampi</th>
               <th>Ativo</th>
               <th>Personalizado</th>
@@ -67,6 +68,7 @@ export default function ProductsListPage() {
               <tr key={product.id}>
                 <td>{product.name}</td>
                 <td>{formatBRL(product.price)}</td>
+                <td>{product.stock <= 0 ? "esgotado" : product.stock}</td>
                 <td>{product.yampiToken || "—"}</td>
                 <td>{product.active ? "sim" : "não"}</td>
                 <td>{product.personalized ? "sim" : "não"}</td>
@@ -98,6 +100,8 @@ export default function ProductsListPage() {
               <div className="product-card-badges">
                 {product.active && <span className="badge success">Ativo</span>}
                 {!product.active && <span className="badge muted">Inativo</span>}
+                {product.stock <= 0 && <span className="badge danger">Esgotado</span>}
+                {product.stock > 0 && <span className="badge info">{product.stock} un.</span>}
                 {product.personalized && <span className="badge info">Personalizado</span>}
                 {product.cartOffer && <span className="badge warning">No carrinho</span>}
               </div>

@@ -64,6 +64,17 @@ export default function EditProductPage() {
           />
         </label>
         <label>
+          Estoque
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={product.stock ?? 0}
+            onChange={(e) => setProduct({ ...product, stock: Number(e.target.value) })}
+          />
+          <span className="field-hint">0 deixa o produto visível na loja com a tarja ESGOTADO.</span>
+        </label>
+        <label>
           Token Yampi
           <input value={product.yampiToken} onChange={(e) => setProduct({ ...product, yampiToken: e.target.value })} />
         </label>

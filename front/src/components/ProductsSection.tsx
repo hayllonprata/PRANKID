@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatBRL, mediaUrl, productGallery, type Product } from "@/lib/api";
+import { formatBRL, isSoldOut, mediaUrl, productGallery, type Product } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
 import { ProductZoomModal } from "./ProductZoomModal";
+import { SoldOutBanner } from "./SoldOutBanner";
 
 const PAGE_SIZE = 3;
 
@@ -20,12 +21,14 @@ function ProductCard({
 }) {
   const photos = productGallery(product);
   const src = mediaUrl(photos[0] || product.imageUrl);
+  const soldOut = isSoldOut(product);
   return (
     <article className="card product-card" onClick={() => onOpen(product)}>
-      <div className="card-media">
+      <div className={`card-media${soldOut ? " is-sold-out" : ""}`}>
         {src ? <img src={src} alt={product.name} /> : <div className="placeholder-toy" />}
         {product.personalized ? <span className="card-tag">Personalizado</span> : null}
         {photos.length > 1 ? <span className="card-photos">{photos.length} fotos</span> : null}
+        {soldOut ? <SoldOutBanner /> : null}
       </div>
       <div className="card-body">
         <h3>{product.name}</h3>
@@ -35,12 +38,14 @@ function ProductCard({
           <button
             className="btn magenta"
             type="button"
+            disabled={soldOut}
             onClick={(event) => {
               event.stopPropagation();
+              if (soldOut) return;
               onSelect(product);
             }}
           >
-            {product.personalized ? "Personalizar" : "Adicionar"}
+            {soldOut ? "Esgotado" : product.personalized ? "Personalizar" : "Adicionar"}
           </button>
         </div>
       </div>
@@ -112,6 +117,7 @@ export function ProductsSection({ products }: { products: Product[] }) {
         : index - 1;
 
   const handleSelect = (product: Product) => {
+    if (isSoldOut(product)) return;
     if (product.personalized) setPending(product);
     else add(product);
   };

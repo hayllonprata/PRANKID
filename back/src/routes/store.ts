@@ -140,6 +140,10 @@ storeRouter.post("/customizations", async (req, res) => {
       res.status(400).json({ error: "Produto personalizado inválido" });
       return;
     }
+    if (product.stock <= 0) {
+      res.status(400).json({ error: `${product.name} está esgotado` });
+      return;
+    }
     const job = clip(item.job);
     const likes = clip(item.likes);
     const colors = clip(item.colors);

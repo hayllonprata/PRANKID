@@ -407,12 +407,38 @@ img { max-width: 100%; display: block; }
   display: grid;
   place-items: center;
   position: relative;
+  overflow: hidden;
 }
 
 .card-media img {
   width: 100%;
   height: 240px;
   object-fit: cover;
+}
+
+.card-media.is-sold-out img,
+.zoom-stage.is-sold-out img {
+  filter: grayscale(0.45) brightness(0.55);
+}
+
+.sold-out-banner {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: -18%;
+  width: 136%;
+  transform: translateY(-50%) rotate(-16deg);
+  background: var(--magenta);
+  color: #fff;
+  border: 3px solid #000;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 4.2vw, 34px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 0 4px;
+  box-shadow: 4px 4px 0 #000;
+  pointer-events: none;
 }
 
 .card-tag {
@@ -769,6 +795,11 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
 }
 
+.qty button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .cart-total {
   margin-top: auto;
   padding-top: 16px;
@@ -954,6 +985,12 @@ img { max-width: 100%; display: block; }
   gap: 8px;
   color: var(--text);
   font-size: 14px;
+}
+.form-grid .field-hint {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
 .form-grid input[type="checkbox"] {
   width: 18px;
@@ -1192,6 +1229,7 @@ img { max-width: 100%; display: block; }
   display: grid;
   place-items: center;
   overflow: hidden;
+  position: relative;
 }
 
 .zoom-stage img {
@@ -1413,6 +1451,12 @@ img { max-width: 100%; display: block; }
   background: rgba(255, 230, 0, 0.15);
   color: var(--yellow);
   border-color: rgba(255, 230, 0, 0.3);
+}
+
+.badge.danger {
+  background: rgba(255, 45, 149, 0.18);
+  color: var(--magenta);
+  border-color: rgba(255, 45, 149, 0.4);
 }
 
 .product-card-row {

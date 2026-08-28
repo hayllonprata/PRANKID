@@ -10,6 +10,7 @@ export default function NewProductPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("0");
+  const [stock, setStock] = useState("0");
   const [images, setImages] = useState<ProductImage[]>([]);
   const [yampiToken, setYampiToken] = useState("");
   const [sku, setSku] = useState("");
@@ -29,6 +30,7 @@ export default function NewProductPage() {
           name,
           description,
           price: Number(price),
+          stock: Number(stock),
           imageUrl: images[0]?.imageUrl || "",
           images: images.map((img) => img.imageUrl),
           yampiToken,
@@ -60,6 +62,11 @@ export default function NewProductPage() {
         <label>
           Preço de vitrine
           <input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+        </label>
+        <label>
+          Estoque
+          <input type="number" min="0" step="1" value={stock} onChange={(e) => setStock(e.target.value)} />
+          <span className="field-hint">0 deixa o produto visível na loja com a tarja ESGOTADO.</span>
         </label>
         <label>
           Token Yampi

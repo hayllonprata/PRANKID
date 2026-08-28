@@ -7,6 +7,7 @@ import {
   replaceProductImages,
 } from "../lib/product-images.js";
 import { serializeAdminSettings, serializeProduct } from "../lib/serialize.js";
+import { parseStock } from "../lib/stock.js";
 import { requireAuth } from "../middleware/auth.js";
 
 export const adminRouter = Router();
@@ -210,6 +211,7 @@ adminRouter.post("/products", async (req, res) => {
       sortOrder: Number(req.body?.sortOrder || 0),
       personalized: Boolean(req.body?.personalized),
       cartOffer: Boolean(req.body?.cartOffer),
+      stock: parseStock(req.body?.stock, 0),
       images: {
         create: urls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
       },
@@ -240,6 +242,7 @@ adminRouter.put("/products/:id", async (req, res) => {
       sortOrder: req.body?.sortOrder === undefined ? existing.sortOrder : Number(req.body.sortOrder),
       personalized: req.body?.personalized === undefined ? existing.personalized : Boolean(req.body.personalized),
       cartOffer: req.body?.cartOffer === undefined ? existing.cartOffer : Boolean(req.body.cartOffer),
+      stock: req.body?.stock === undefined ? existing.stock : parseStock(req.body.stock, existing.stock),
     },
   });
   if (urls) await replaceProductImages(id, urls);

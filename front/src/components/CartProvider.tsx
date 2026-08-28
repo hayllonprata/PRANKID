@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { cartQualifiesForDiscount, offerPrice, type PersonalBrief, type Product } from "@/lib/api";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { cartQualifiesForDiscount, isSoldOut, offerPrice, productStock, type PersonalBrief, type Product } from "@/lib/api";
 
 export type CartItem = {
   id: string;
@@ -43,10 +43,45 @@ function catalogPrice(item: Pick<CartItem, "price" | "listPrice">) {
   return item.listPrice || item.price;
 }
 
+function cartChanged(a: CartItem[], b: CartItem[]) {
+  if (a.length !== b.length) return true;
+  return a.some(
+    (item, index) =>
+      item.id !== b[index]?.id ||
+      item.qty !== b[index]?.qty ||
+      item.yampiToken !== b[index]?.yampiToken ||
+      item.name !== b[index]?.name ||
+      catalogPrice(item) !== catalogPrice(b[index]),
+  );
+}
+
+function clampCartToStock(items: CartItem[], products: Product[]) {
+  const byId = new Map(products.map((product) => [product.id, product]));
+  const used = new Map<string, number>();
+  const next: CartItem[] = [];
+  for (const item of items) {
+    const product = byId.get(item.productId);
+    if (!product) {
+      next.push(item);
+      continue;
+    }
+    if (isSoldOut(product)) continue;
+    const stock = productStock(product);
+    const already = used.get(item.productId) || 0;
+    const allowed = stock - already;
+    if (allowed <= 0) continue;
+    const qty = Math.min(item.qty, allowed);
+    used.set(item.productId, already + qty);
+    next.push(qty === item.qty ? item : { ...item, qty });
+  }
+  return next;
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
+  const catalogRef = useRef<Product[]>([]);
 
   useEffect(() => {
     try {
@@ -99,11 +134,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       open,
       setOpen,
       add: (product, brief, fromOffer = false) => {
+        if (isSoldOut(product)) return;
         const id = lineId(product.id, fromOffer);
         const price = product.price;
+        const stock = productStock(product);
         setItems((current) => {
+          const used = current
+            .filter((item) => item.productId === product.id)
+            .reduce((sum, item) => sum + item.qty, 0);
+          const remaining = stock - used;
           const found = current.find((item) => item.id === id);
           if (found && !product.personalized) {
+            if (remaining <= 0) return current;
             return current.map((item) =>
               item.id === id
                 ? {
@@ -132,6 +174,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 : item,
             );
           }
+          if (remaining <= 0) return current;
           return [
             ...current,
             {
@@ -152,17 +195,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setOpen(true);
       },
       syncCatalog: (products) => {
+        catalogRef.current = products;
         const byId = new Map(products.map((product) => [product.id, product]));
         setItems((current) => {
-          let changed = false;
-          const next = current.map((item) => {
+          const updated = current.map((item) => {
             const product = byId.get(item.productId);
             if (!product) return item;
             const token = (product.yampiToken || item.yampiToken || "").trim();
             if (token === item.yampiToken && product.name === item.name && product.price === catalogPrice(item)) {
               return item;
             }
-            changed = true;
             return {
               ...item,
               yampiToken: token,
@@ -171,16 +213,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               price: product.price,
             };
           });
-          return changed ? next : current;
+          const next = clampCartToStock(updated, products);
+          return cartChanged(current, next) ? next : current;
         });
       },
       setQty: (id, qty) => {
         setItems((current) =>
           current.flatMap((item) => {
             if (item.id !== id) return [item];
-            if (item.personalized) return [{ ...item, qty: Math.max(1, qty) }];
-            if (qty <= 0) return [];
-            return [{ ...item, qty }];
+            const product = catalogRef.current.find((entry) => entry.id === item.productId);
+            const stock = product ? productStock(product) : Number.MAX_SAFE_INTEGER;
+            const others = current
+              .filter((entry) => entry.productId === item.productId && entry.id !== id)
+              .reduce((sum, entry) => sum + entry.qty, 0);
+            const max = Math.max(0, stock - others);
+            if (item.personalized) return [{ ...item, qty: Math.min(max, Math.max(1, qty)) }];
+            const nextQty = Math.min(max, qty);
+            if (nextQty <= 0) return [];
+            return [{ ...item, qty: nextQty }];
           }),
         );
       },

@@ -17,6 +17,7 @@ export type Product = {
   sortOrder: number;
   personalized: boolean;
   cartOffer: boolean;
+  stock: number;
 };
 
 export type Hero = {
@@ -151,6 +152,27 @@ export function instagramLink(raw: string) {
   if (raw.startsWith("http")) return raw;
   const handle = raw.replace(/^@/, "");
   return `https://www.instagram.com/${handle}`;
+}
+
+export function productStock(product: { stock?: number | null }) {
+  if (product.stock == null) return Number.MAX_SAFE_INTEGER;
+  const n = Number(product.stock);
+  if (!Number.isFinite(n)) return Number.MAX_SAFE_INTEGER;
+  return Math.max(0, Math.floor(n));
+}
+
+export function isSoldOut(product: { stock?: number | null }) {
+  return product.stock != null && productStock(product) <= 0;
+}
+
+export function cartQtyForProduct(
+  items: { id?: string; productId: string; qty: number }[],
+  productId: string,
+  exceptId?: string,
+) {
+  return items
+    .filter((item) => item.productId === productId && item.id !== exceptId)
+    .reduce((sum, item) => sum + item.qty, 0);
 }
 
 export const CART_OFFER_DISCOUNT = 0.15;
