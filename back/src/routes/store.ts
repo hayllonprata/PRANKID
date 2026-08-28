@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "../lib/prisma.js";
 import { fillBriefFromTranscript, transcribeAudioFile } from "../lib/openai-transcribe.js";
 import { productImageInclude } from "../lib/product-images.js";
+import { parseProductSize } from "../lib/product-sizes.js";
 import { publicSettings, serializeProduct } from "../lib/serialize.js";
 import { isIpBlocked, trackSiteAccess } from "../lib/site-access.js";
 import { uploadDir } from "./upload.js";
@@ -149,6 +150,11 @@ storeRouter.post("/customizations", async (req, res) => {
     const colors = clip(item.colors);
     const transcript = clip(item.transcript, 8000);
     const audioUrl = clip(item.audioUrl, 400);
+    const size = product.hasSizes ? parseProductSize(item.size) : "";
+    if (product.hasSizes && !size) {
+      res.status(400).json({ error: `Escolha o tamanho de ${product.name}` });
+      return;
+    }
     if ((!job || !likes || !colors) && !transcript) {
       res.status(400).json({ error: "Escreva o briefing ou envie um áudio transcrito" });
       return;
@@ -163,6 +169,46 @@ storeRouter.post("/customizations", async (req, res) => {
           colors,
           transcript,
           audioUrl,
+          size,
+          qty: Math.max(1, Number(item.qty || 1)),
+        },
+      }),
+    );
+  }
+
+  res.status(201).json({ ok: true, count: saved.length });
+});
+
+storeRouter.post("/size-orders", async (req, res) => {
+  const rawItems = Array.isArray(req.body?.items) ? req.body.items : [];
+  if (!rawItems.length) {
+    res.status(400).json({ error: "Nenhum tamanho enviado" });
+    return;
+  }
+
+  const saved = [];
+  for (const item of rawItems) {
+    const productId = String(item?.productId || "");
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product?.hasSizes || !product.active) {
+      res.status(400).json({ error: "Produto com tamanho inválido" });
+      return;
+    }
+    if (product.stock <= 0) {
+      res.status(400).json({ error: `${product.name} está esgotado` });
+      return;
+    }
+    const size = parseProductSize(item.size);
+    if (!size) {
+      res.status(400).json({ error: `Escolha o tamanho de ${product.name}` });
+      return;
+    }
+    saved.push(
+      await prisma.sizeOrder.create({
+        data: {
+          productId: product.id,
+          productName: product.name,
+          size,
           qty: Math.max(1, Number(item.qty || 1)),
         },
       }),

@@ -1307,6 +1307,74 @@ img { max-width: 100%; display: block; }
   object-fit: cover;
 }
 
+.size-dialog {
+  width: min(560px, 100%);
+  gap: 12px;
+}
+
+.size-dialog .muted {
+  margin: 0;
+}
+
+.size-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.size-picker button {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid #000;
+  background: #16161c;
+  color: var(--text);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.size-picker button.on,
+.size-picker button:hover {
+  background: var(--yellow);
+  color: #111;
+}
+
+.size-chart-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.size-chart {
+  width: 100%;
+  min-width: 360px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.size-chart th,
+.size-chart td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.size-chart th {
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+}
+
+.size-chart tr.on td {
+  background: rgba(255, 230, 0, 0.12);
+  color: var(--yellow);
+  font-weight: 800;
+}
+
 .skeleton {
   background: linear-gradient(90deg, #ececee, #f7f7f8, #ececee);
   background-size: 200% 100%;

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api, type Product } from "@/lib/api";
 import { ProductImagesField } from "@/components/panel/ProductImagesField";
+import { SizeChart } from "@/components/SizeChart";
 
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
@@ -134,6 +135,18 @@ export default function EditProductPage() {
             Produto personalizado (pede briefing na compra)
           </span>
         </label>
+        <label>
+          <span>
+            <input
+              type="checkbox"
+              checked={product.hasSizes}
+              onChange={(e) => setProduct({ ...product, hasSizes: e.target.checked })}
+            />{" "}
+            Pedir tamanho na compra (camiseta)
+          </span>
+          <span className="field-hint">O cliente escolhe P, M, G, GG, XG, G2 ou G3. A tabela de medidas aparece na hora da compra.</span>
+        </label>
+        {product.hasSizes ? <SizeChart /> : null}
         <label>
           <span>
             <input

@@ -5,6 +5,7 @@ import { api, buildYampiCheckout, cartQtyForProduct, formatBRL, isSoldOut, media
 import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
+import { SizeSelectModal } from "./SizeSelectModal";
 
 export function CartDrawer({
   yampiBaseUrl,
@@ -18,7 +19,8 @@ export function CartDrawer({
   const { items, total, listTotal, bundleDiscount, count, open, setOpen, setQty, remove, add } = useCart();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState<Product | null>(null);
+  const [pending, setPending] = useState<{ product: Product; size?: string } | null>(null);
+  const [sizing, setSizing] = useState<Product | null>(null);
 
   function atStockLimit(item: { id: string; productId: string; qty: number }) {
     const live = products.find((product) => product.id === item.productId);
@@ -36,7 +38,11 @@ export function CartDrawer({
   function addOffer(product: Product) {
     if (isSoldOut(product)) return;
     if (product.personalized) {
-      setPending(product);
+      setPending({ product });
+      return;
+    }
+    if (product.hasSizes) {
+      setSizing(product);
       return;
     }
     add(product, undefined, true);
@@ -72,6 +78,14 @@ export function CartDrawer({
       setError(`Sem estoque para: ${[...new Set(soldOut.map((item) => item.name))].join(", ")}.`);
       return;
     }
+    const missingSize = items.filter((item) => {
+      const live = products.find((product) => product.id === item.productId);
+      return Boolean(live?.hasSizes && !item.size);
+    });
+    if (missingSize.length) {
+      setError(`Escolha o tamanho de: ${[...new Set(missingSize.map((item) => item.name))].join(", ")}.`);
+      return;
+    }
     const custom = items.filter((item) => item.personalized);
     const incomplete = custom.filter((item) => {
       const typed = item.brief?.job && item.brief?.likes && item.brief?.colors;
@@ -81,6 +95,7 @@ export function CartDrawer({
       setError("Escreva o briefing ou grave um áudio nas peças personalizadas.");
       return;
     }
+    const sized = items.filter((item) => item.size);
     setBusy(true);
     try {
       if (custom.length) {
@@ -94,6 +109,19 @@ export function CartDrawer({
               colors: item.brief?.colors,
               transcript: item.brief?.transcript,
               audioUrl: item.brief?.audioUrl,
+              size: item.size || item.brief?.size,
+              qty: item.qty,
+            })),
+          }),
+        });
+      }
+      if (sized.length) {
+        await api("/api/store/size-orders", {
+          method: "POST",
+          body: JSON.stringify({
+            items: sized.map((item) => ({
+              productId: item.productId || item.id,
+              size: item.size,
               qty: item.qty,
             })),
           }),
@@ -131,6 +159,7 @@ export function CartDrawer({
                 <strong>{item.name}</strong>
                 {bundleDiscount ? <div className="muted">15% off no total</div> : null}
                 {item.personalized ? <div className="muted">Personalizado</div> : null}
+                {item.size ? <div className="muted">Tamanho {item.size}</div> : null}
                 {item.brief?.transcript ? <p className="cart-brief">{item.brief.transcript}</p> : null}
                 {item.brief && !item.brief.transcript ? (
                   <p className="cart-brief">
@@ -221,12 +250,23 @@ export function CartDrawer({
           </button>
         </div>
       </aside>
+      {sizing ? (
+        <SizeSelectModal
+          product={sizing}
+          onCancel={() => setSizing(null)}
+          onConfirm={(size) => {
+            add(sizing, undefined, true, size);
+            setSizing(null);
+          }}
+        />
+      ) : null}
       {pending ? (
         <PersonalizeModal
-          product={pending}
+          product={pending.product}
+          size={pending.size}
           onCancel={() => setPending(null)}
           onConfirm={(brief) => {
-            add(pending, brief, true);
+            add(pending.product, brief, true, pending.size || brief.size);
             setPending(null);
           }}
         />

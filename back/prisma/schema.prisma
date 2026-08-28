@@ -63,6 +63,7 @@ model Product {
   sortOrder    Int            @default(0)
   personalized Boolean        @default(false)
   cartOffer    Boolean        @default(false)
+  hasSizes     Boolean        @default(false)
   stock        Int            @default(0)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -89,8 +90,20 @@ model CustomBrief {
   colors      String
   transcript  String   @default("")
   audioUrl    String   @default("")
+  size        String   @default("")
   qty         Int      @default(1)
   createdAt   DateTime @default(now())
+}
+
+model SizeOrder {
+  id          String   @id @default(cuid())
+  productId   String
+  productName String
+  size        String
+  qty         Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model CrewShot {

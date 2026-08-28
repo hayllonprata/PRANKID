@@ -17,6 +17,7 @@ export type Product = {
   sortOrder: number;
   personalized: boolean;
   cartOffer: boolean;
+  hasSizes: boolean;
   stock: number;
 };
 
@@ -48,6 +49,7 @@ export type PersonalBrief = {
   colors: string;
   transcript?: string;
   audioUrl?: string;
+  size?: string;
 };
 
 export type CrewShot = {

@@ -11,32 +11,67 @@ type Brief = {
   colors: string;
   transcript: string;
   audioUrl: string;
+  size: string;
+  qty: number;
+  createdAt: string;
+};
+
+type SizeOrder = {
+  id: string;
+  productName: string;
+  size: string;
   qty: number;
   createdAt: string;
 };
 
 export default function CustomizationsPage() {
   const [briefs, setBriefs] = useState<Brief[]>([]);
+  const [sizes, setSizes] = useState<SizeOrder[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    api<Brief[]>("/api/admin/customizations")
-      .then(setBriefs)
+    Promise.all([api<Brief[]>("/api/admin/customizations"), api<SizeOrder[]>("/api/admin/size-orders")])
+      .then(([nextBriefs, nextSizes]) => {
+        setBriefs(nextBriefs);
+        setSizes(nextSizes);
+      })
       .catch((err: Error) => setError(err.message));
   }, []);
 
   return (
     <>
       <h1>Personalizações</h1>
-      <p className="muted">Briefings enviados na compra de peças personalizadas, para o artista montar a essência do cliente.</p>
+      <p className="muted">Briefings e tamanhos enviados na compra, para montar a peça certa.</p>
       {error ? <p className="msg err">{error}</p> : null}
-      {briefs.length === 0 ? <p>Nenhum briefing ainda.</p> : null}
+
+      <h2 style={{ marginTop: 28 }}>Tamanhos</h2>
+      {sizes.length === 0 ? <p className="muted">Nenhum tamanho pedido ainda.</p> : null}
+      {sizes.map((order) => (
+        <article className="panel-card" key={order.id} style={{ marginBottom: 16 }}>
+          <h2>{order.productName}</h2>
+          <p className="muted">
+            {new Date(order.createdAt).toLocaleString("pt-BR")} · qtd {order.qty}
+          </p>
+          <p>
+            <strong>Tamanho:</strong> {order.size}
+          </p>
+        </article>
+      ))}
+
+      <h2 style={{ marginTop: 28 }}>Briefings</h2>
+      {briefs.length === 0 ? <p className="muted">Nenhum briefing ainda.</p> : null}
       {briefs.map((brief) => (
         <article className="panel-card" key={brief.id} style={{ marginBottom: 16 }}>
           <h2>{brief.productName}</h2>
           <p className="muted">
             {new Date(brief.createdAt).toLocaleString("pt-BR")} · qtd {brief.qty}
+            {brief.size ? ` · tamanho ${brief.size}` : ""}
           </p>
+          {brief.size ? (
+            <p>
+              <strong>Tamanho:</strong> {brief.size}
+            </p>
+          ) : null}
           <p>
             <strong>O que faz:</strong> {brief.job}
           </p>

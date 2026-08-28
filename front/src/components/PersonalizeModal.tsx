@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { api, type PersonalBrief, type Product } from "@/lib/api";
+import { isProductSize, type ProductSizeId } from "@/lib/product-sizes";
+import { SizeChart, SizePicker } from "./SizeChart";
 
 function formatElapsed(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60);
@@ -11,10 +13,12 @@ function formatElapsed(totalSeconds: number) {
 
 export function PersonalizeModal({
   product,
+  size,
   onCancel,
   onConfirm,
 }: {
   product: Product;
+  size?: string;
   onCancel: () => void;
   onConfirm: (brief: PersonalBrief) => void;
 }) {
@@ -23,6 +27,7 @@ export function PersonalizeModal({
   const [colors, setColors] = useState("");
   const [transcript, setTranscript] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
+  const [chosenSize, setChosenSize] = useState<ProductSizeId | "">(isProductSize(size) ? size : "");
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -101,6 +106,10 @@ export function PersonalizeModal({
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (product.hasSizes && !chosenSize) {
+      setError("Escolha um tamanho.");
+      return;
+    }
     const typed = job.trim() && likes.trim() && colors.trim();
     if (!typed && !transcript.trim()) {
       setError("Escreva os três campos ou grave um áudio.");
@@ -112,6 +121,7 @@ export function PersonalizeModal({
       colors: colors.trim(),
       transcript: transcript.trim(),
       audioUrl,
+      size: chosenSize || undefined,
     });
   }
 
@@ -166,6 +176,13 @@ export function PersonalizeModal({
           ) : null}
         </div>
         <form className="form-grid" onSubmit={onSubmit}>
+          {product.hasSizes ? (
+            <div>
+              <p>Tamanho {chosenSize ? `(${chosenSize})` : ""}</p>
+              <SizePicker value={chosenSize} onChange={setChosenSize} disabled={busy || recording} />
+              <SizeChart selected={chosenSize} />
+            </div>
+          ) : null}
           <label>
             O que você faz?
             <textarea rows={2} value={job} onChange={(e) => setJob(e.target.value)} placeholder="Trabalho, ofício, rotina..." />

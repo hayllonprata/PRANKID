@@ -277,7 +277,14 @@ export default function ProductsListPage() {
                 <td className="product-cover-cell">
                   <ProductCover product={product} />
                 </td>
-                <td>{product.name}</td>
+                <td>
+                  {product.name}
+                  {product.hasSizes ? (
+                    <span className="badge warning" style={{ marginLeft: 8 }}>
+                      Tamanhos
+                    </span>
+                  ) : null}
+                </td>
                 <td>{formatBRL(product.price)}</td>
                 <td>{product.stock <= 0 ? "esgotado" : product.stock}</td>
                 <td>{product.yampiToken || "—"}</td>
@@ -341,6 +348,7 @@ export default function ProductsListPage() {
                 {product.stock <= 0 && <span className="badge danger">Esgotado</span>}
                 {product.stock > 0 && <span className="badge info">{product.stock} un.</span>}
                 {product.personalized && <span className="badge info">Personalizado</span>}
+                {product.hasSizes && <span className="badge warning">Tamanhos</span>}
                 {product.cartOffer && <span className="badge warning">No carrinho</span>}
               </div>
 

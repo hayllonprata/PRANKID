@@ -6,6 +6,7 @@ import { siteCopy } from "@/lib/site-copy";
 import { useCart } from "./CartProvider";
 import { PersonalizeModal } from "./PersonalizeModal";
 import { ProductZoomModal } from "./ProductZoomModal";
+import { SizeSelectModal } from "./SizeSelectModal";
 
 const PAGE_SIZE = 3;
 
@@ -26,6 +27,7 @@ function ProductCard({
       <div className="card-media">
         {src ? <img src={src} alt={product.name} /> : <div className="placeholder-toy" />}
         {product.personalized ? <span className="card-tag">Personalizado</span> : null}
+        {product.hasSizes && !product.personalized ? <span className="card-tag">Tamanhos</span> : null}
         {photos.length > 1 ? <span className="card-photos">{photos.length} fotos</span> : null}
       </div>
       <div className="card-body">
@@ -43,7 +45,7 @@ function ProductCard({
               onSelect(product);
             }}
           >
-            {soldOut ? "Esgotado" : product.personalized ? "Personalizar" : "Adicionar"}
+            {soldOut ? "Esgotado" : product.personalized ? "Personalizar" : product.hasSizes ? "Tamanho" : "Adicionar"}
           </button>
         </div>
       </div>
@@ -53,7 +55,8 @@ function ProductCard({
 
 export function ProductsSection({ products }: { products: Product[] }) {
   const { add } = useCart();
-  const [pending, setPending] = useState<Product | null>(null);
+  const [pending, setPending] = useState<{ product: Product; size?: string } | null>(null);
+  const [sizing, setSizing] = useState<Product | null>(null);
   const [zoomed, setZoomed] = useState<Product | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [index, setIndex] = useState(0);
@@ -116,7 +119,8 @@ export function ProductsSection({ products }: { products: Product[] }) {
 
   const handleSelect = (product: Product) => {
     if (isSoldOut(product)) return;
-    if (product.personalized) setPending(product);
+    if (product.personalized) setPending({ product });
+    else if (product.hasSizes) setSizing(product);
     else add(product);
   };
 
@@ -212,12 +216,23 @@ export function ProductsSection({ products }: { products: Product[] }) {
         )}
       </div>
       {zoomed ? <ProductZoomModal product={zoomed} onClose={() => setZoomed(null)} /> : null}
+      {sizing ? (
+        <SizeSelectModal
+          product={sizing}
+          onCancel={() => setSizing(null)}
+          onConfirm={(size) => {
+            add(sizing, undefined, false, size);
+            setSizing(null);
+          }}
+        />
+      ) : null}
       {pending ? (
         <PersonalizeModal
-          product={pending}
+          product={pending.product}
+          size={pending.size}
           onCancel={() => setPending(null)}
           onConfirm={(brief) => {
-            add(pending, brief);
+            add(pending.product, brief, false, pending.size || brief.size);
             setPending(null);
           }}
         />

@@ -14,6 +14,7 @@ export type CartItem = {
   qty: number;
   personalized: boolean;
   fromOffer: boolean;
+  size?: string;
   brief?: PersonalBrief;
 };
 
@@ -25,7 +26,7 @@ type CartContextValue = {
   bundleDiscount: boolean;
   open: boolean;
   setOpen: (open: boolean) => void;
-  add: (product: Product, brief?: PersonalBrief, fromOffer?: boolean) => void;
+  add: (product: Product, brief?: PersonalBrief, fromOffer?: boolean, size?: string) => void;
   syncCatalog: (products: Product[]) => void;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
@@ -35,8 +36,10 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "prankid_cart";
 
-function lineId(productId: string, fromOffer: boolean) {
-  return fromOffer ? `${productId}__offer` : productId;
+function lineId(productId: string, fromOffer: boolean, size?: string) {
+  const offer = fromOffer ? "__offer" : "";
+  const sized = size ? `__${size}` : "";
+  return `${productId}${offer}${sized}`;
 }
 
 function catalogPrice(item: Pick<CartItem, "price" | "listPrice">) {
@@ -51,6 +54,7 @@ function cartChanged(a: CartItem[], b: CartItem[]) {
       item.qty !== b[index]?.qty ||
       item.yampiToken !== b[index]?.yampiToken ||
       item.name !== b[index]?.name ||
+      item.size !== b[index]?.size ||
       catalogPrice(item) !== catalogPrice(b[index]),
   );
 }
@@ -133,9 +137,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       bundleDiscount,
       open,
       setOpen,
-      add: (product, brief, fromOffer = false) => {
+      add: (product, brief, fromOffer = false, size) => {
         if (isSoldOut(product)) return;
-        const id = lineId(product.id, fromOffer);
+        const chosenSize = (size || brief?.size || "").trim().toUpperCase();
+        if (product.hasSizes && !chosenSize) return;
+        const id = lineId(product.id, fromOffer, chosenSize || undefined);
         const price = product.price;
         const stock = productStock(product);
         setItems((current) => {
@@ -155,6 +161,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     name: product.name,
                     price,
                     listPrice: price,
+                    size: chosenSize || item.size,
                   }
                 : item,
             );
@@ -170,6 +177,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     yampiToken: product.yampiToken,
                     price,
                     listPrice: price,
+                    size: chosenSize || item.size,
                   }
                 : item,
             );
@@ -188,6 +196,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               qty: 1,
               personalized: Boolean(product.personalized),
               fromOffer,
+              size: chosenSize || undefined,
               brief,
             },
           ];

@@ -269,6 +269,7 @@ adminRouter.post("/products", async (req, res) => {
       sortOrder: productSortOrder,
       personalized: Boolean(req.body?.personalized),
       cartOffer: Boolean(req.body?.cartOffer),
+      hasSizes: Boolean(req.body?.hasSizes),
       stock: parseStock(req.body?.stock, 0),
       images: {
         create: urls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
@@ -315,6 +316,7 @@ adminRouter.post("/products/:id/duplicate", async (req, res) => {
       sortOrder: (last._max.sortOrder ?? -1) + 1,
       personalized: existing.personalized,
       cartOffer: existing.cartOffer,
+      hasSizes: existing.hasSizes,
       stock: existing.stock,
       images: {
         create: uniqueUrls.map((imageUrl, sortOrder) => ({ imageUrl, sortOrder })),
@@ -346,6 +348,7 @@ adminRouter.put("/products/:id", async (req, res) => {
       sortOrder: req.body?.sortOrder === undefined ? existing.sortOrder : Number(req.body.sortOrder),
       personalized: req.body?.personalized === undefined ? existing.personalized : Boolean(req.body.personalized),
       cartOffer: req.body?.cartOffer === undefined ? existing.cartOffer : Boolean(req.body.cartOffer),
+      hasSizes: req.body?.hasSizes === undefined ? existing.hasSizes : Boolean(req.body.hasSizes),
       stock: req.body?.stock === undefined ? existing.stock : parseStock(req.body.stock, existing.stock),
     },
   });
@@ -462,6 +465,13 @@ adminRouter.get("/customizations", async (_req, res) => {
     orderBy: { createdAt: "desc" },
   });
   res.json(briefs);
+});
+
+adminRouter.get("/size-orders", async (_req, res) => {
+  const orders = await prisma.sizeOrder.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+  res.json(orders);
 });
 
 adminRouter.get("/accesses", async (_req, res) => {

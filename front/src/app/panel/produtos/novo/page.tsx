@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, type ProductImage } from "@/lib/api";
 import { ProductImagesField } from "@/components/panel/ProductImagesField";
+import { SizeChart } from "@/components/SizeChart";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function NewProductPage() {
   const [active, setActive] = useState(true);
   const [personalized, setPersonalized] = useState(false);
   const [cartOffer, setCartOffer] = useState(false);
+  const [hasSizes, setHasSizes] = useState(false);
   const [error, setError] = useState("");
 
   async function onSubmit(event: FormEvent) {
@@ -37,6 +39,7 @@ export default function NewProductPage() {
           active,
           personalized,
           cartOffer,
+          hasSizes,
         }),
       });
       router.replace("/panel/produtos");
@@ -87,6 +90,14 @@ export default function NewProductPage() {
             Produto personalizado (pede briefing na compra)
           </span>
         </label>
+        <label>
+          <span>
+            <input type="checkbox" checked={hasSizes} onChange={(e) => setHasSizes(e.target.checked)} />{" "}
+            Pedir tamanho na compra (camiseta)
+          </span>
+          <span className="field-hint">O cliente escolhe P, M, G, GG, XG, G2 ou G3. A tabela de medidas aparece na hora da compra.</span>
+        </label>
+        {hasSizes ? <SizeChart /> : null}
         <label>
           <span>
             <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Ativo na vitrine
