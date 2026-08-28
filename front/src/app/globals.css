@@ -600,6 +600,10 @@ img { max-width: 100%; display: block; }
   flex-wrap: wrap;
 }
 
+.site-footer .logo-tagline {
+  color: #fff;
+}
+
 .footer-social {
   display: flex;
   align-items: center;
