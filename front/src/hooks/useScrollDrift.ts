@@ -18,23 +18,21 @@ function tick() {
   if (typeof window === "undefined") return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     nodes.forEach(({ el }) => {
-      el.style.setProperty("--drift-y", "0px");
-      el.style.setProperty("--drift-x", "0px");
+        el.style.transform = "";
+      });
+      return;
+    }
+    const view = window.innerHeight || 1;
+    const mid = view / 2;
+    const scrolled = window.scrollY || 0;
+    nodes.forEach(({ el, speedY, speedX, origin }) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.bottom < -140 || rect.top > view + 140) return;
+      const delta = origin === "page" ? -scrolled : rect.top + rect.height / 2 - mid;
+      const y = Math.max(-56, Math.min(56, delta * speedY));
+      const x = Math.max(-20, Math.min(20, delta * speedX));
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     });
-    return;
-  }
-  const view = window.innerHeight || 1;
-  const mid = view / 2;
-  const scrolled = window.scrollY || 0;
-  nodes.forEach(({ el, speedY, speedX, origin }) => {
-    const rect = el.getBoundingClientRect();
-    if (rect.bottom < -140 || rect.top > view + 140) return;
-    const delta = origin === "page" ? -scrolled : rect.top + rect.height / 2 - mid;
-    const y = Math.max(-52, Math.min(52, delta * speedY));
-    const x = Math.max(-18, Math.min(18, delta * speedX));
-    el.style.setProperty("--drift-y", `${y.toFixed(1)}px`);
-    el.style.setProperty("--drift-x", `${x.toFixed(1)}px`);
-  });
 }
 
 function onScroll() {
