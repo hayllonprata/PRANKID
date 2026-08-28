@@ -3,7 +3,19 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ConfirmModal } from "@/components/panel/ConfirmModal";
-import { api, formatBRL, type Product } from "@/lib/api";
+import { api, formatBRL, mediaUrl, productGallery, type Product } from "@/lib/api";
+
+function coverSrc(product: Product) {
+  return mediaUrl(productGallery(product)[0] || product.imageUrl);
+}
+
+function ProductCover({ product }: { product: Product }) {
+  const src = coverSrc(product);
+  if (!src) {
+    return <span className="product-cover-thumb is-empty" aria-hidden />;
+  }
+  return <img className="product-cover-thumb" src={src} alt="" draggable={false} />;
+}
 
 function withSortOrder(list: Product[]) {
   return list.map((item, sortOrder) => ({ ...item, sortOrder }));
@@ -189,6 +201,7 @@ export default function ProductsListPage() {
           <thead>
             <tr>
               <th>Ordem</th>
+              <th>Capa</th>
               <th>Nome</th>
               <th>Preço</th>
               <th>Estoque</th>
@@ -237,6 +250,9 @@ export default function ProductsListPage() {
                     </span>
                     {orderControls(index)}
                   </div>
+                </td>
+                <td className="product-cover-cell">
+                  <ProductCover product={product} />
                 </td>
                 <td>{product.name}</td>
                 <td>{formatBRL(product.price)}</td>
@@ -288,8 +304,11 @@ export default function ProductsListPage() {
               {orderControls(index)}
             </div>
             <div className="product-card-header">
-              <h3>{product.name}</h3>
-              <span className="product-card-price">{formatBRL(product.price)}</span>
+              <ProductCover product={product} />
+              <div className="product-card-heading">
+                <h3>{product.name}</h3>
+                <span className="product-card-price">{formatBRL(product.price)}</span>
+              </div>
             </div>
 
             <div className="product-card-info">
