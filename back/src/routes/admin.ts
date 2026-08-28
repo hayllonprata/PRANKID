@@ -192,6 +192,34 @@ adminRouter.get("/products", async (_req, res) => {
   res.json(products.map(serializeProduct));
 });
 
+adminRouter.put("/products/reorder", async (req, res) => {
+  const productIds: string[] = Array.isArray(req.body?.productIds)
+    ? req.body.productIds.map((item: unknown) => String(item ?? "").trim()).filter((id: string) => id.length > 0)
+    : [];
+  const existing = await prisma.product.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    select: { id: true },
+  });
+  const existingIds = existing.map((item) => item.id);
+  const uniqueIds = [...new Set(productIds)];
+  if (
+    uniqueIds.length !== existingIds.length ||
+    uniqueIds.length !== productIds.length ||
+    uniqueIds.some((id) => !existingIds.includes(id))
+  ) {
+    res.status(400).json({ error: "Ordem de produtos inválida" });
+    return;
+  }
+  await prisma.$transaction(
+    productIds.map((id, sortOrder) => prisma.product.update({ where: { id }, data: { sortOrder } })),
+  );
+  const products = await prisma.product.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: productImageInclude,
+  });
+  res.json(products.map(serializeProduct));
+});
+
 adminRouter.post("/products", async (req, res) => {
   const name = String(req.body?.name || "").trim();
   if (!name) {
@@ -199,6 +227,12 @@ adminRouter.post("/products", async (req, res) => {
     return;
   }
   const urls = parseImageUrls(req.body) ?? [String(req.body?.imageUrl ?? "").trim()].filter(Boolean);
+  const last = await prisma.product.aggregate({ _max: { sortOrder: true } });
+  const nextOrder = (last._max.sortOrder ?? -1) + 1;
+  const productSortOrder =
+    req.body?.sortOrder === undefined || req.body?.sortOrder === null || req.body?.sortOrder === ""
+      ? nextOrder
+      : Number(req.body.sortOrder);
   const product = await prisma.product.create({
     data: {
       name,
@@ -208,7 +242,7 @@ adminRouter.post("/products", async (req, res) => {
       yampiToken: String(req.body?.yampiToken ?? "").trim(),
       sku: String(req.body?.sku ?? "").trim(),
       active: req.body?.active !== false,
-      sortOrder: Number(req.body?.sortOrder || 0),
+      sortOrder: productSortOrder,
       personalized: Boolean(req.body?.personalized),
       cartOffer: Boolean(req.body?.cartOffer),
       stock: parseStock(req.body?.stock, 0),

@@ -14,7 +14,6 @@ export default function NewProductPage() {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [yampiToken, setYampiToken] = useState("");
   const [sku, setSku] = useState("");
-  const [sortOrder, setSortOrder] = useState("0");
   const [active, setActive] = useState(true);
   const [personalized, setPersonalized] = useState(false);
   const [cartOffer, setCartOffer] = useState(false);
@@ -35,7 +34,6 @@ export default function NewProductPage() {
           images: images.map((img) => img.imageUrl),
           yampiToken,
           sku,
-          sortOrder: Number(sortOrder),
           active,
           personalized,
           cartOffer,
@@ -76,10 +74,6 @@ export default function NewProductPage() {
           SKU
           <input value={sku} onChange={(e) => setSku(e.target.value)} />
         </label>
-        <label>
-          Ordem
-          <input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
-        </label>
         <ProductImagesField images={images} onChange={setImages} />
         <label>
           <span>
@@ -97,7 +91,7 @@ export default function NewProductPage() {
           <span>
             <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Ativo na vitrine
           </span>
-          <span className="field-hint">Desmarque para criar o produto escondido da loja.</span>
+          <span className="field-hint">Desmarque para criar o produto escondido da loja. Novos produtos entram no fim da vitrine; a ordem se ajusta na lista.</span>
         </label>
         {error ? <p className="msg err">{error}</p> : null}
         <button className="btn" type="submit">

@@ -1,9 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ConfirmModal } from "@/components/panel/ConfirmModal";
 import { api, formatBRL, type Product } from "@/lib/api";
+
+function withSortOrder(list: Product[]) {
+  return list.map((item, sortOrder) => ({ ...item, sortOrder }));
+}
+
+function moveProduct(list: Product[], from: number, to: number) {
+  if (from === to || from < 0 || to < 0 || from >= list.length || to >= list.length) return list;
+  const next = [...list];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return withSortOrder(next);
+}
 
 export default function ProductsListPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -11,10 +23,16 @@ export default function ProductsListPage() {
   const [pendingId, setPendingId] = useState("");
   const [busy, setBusy] = useState(false);
   const [togglingId, setTogglingId] = useState("");
+  const [reordering, setReordering] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const productsRef = useRef<Product[]>([]);
 
   async function load() {
     try {
-      setProducts(await api<Product[]>("/api/admin/products"));
+      const list = await api<Product[]>("/api/admin/products");
+      productsRef.current = list;
+      setProducts(list);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao carregar");
     }
@@ -24,8 +42,48 @@ export default function ProductsListPage() {
     load();
   }, []);
 
+  async function persistOrder(next: Product[]) {
+    const previous = productsRef.current;
+    productsRef.current = next;
+    setProducts(next);
+    setReordering(true);
+    setError("");
+    try {
+      const saved = await api<Product[]>("/api/admin/products/reorder", {
+        method: "PUT",
+        body: JSON.stringify({ productIds: next.map((item) => item.id) }),
+      });
+      productsRef.current = saved;
+      setProducts(saved);
+    } catch (err) {
+      productsRef.current = previous;
+      setProducts(previous);
+      setError(err instanceof Error ? err.message : "Falha ao reordenar");
+      await load();
+    } finally {
+      setReordering(false);
+    }
+  }
+
+  async function moveBy(index: number, delta: number) {
+    if (reordering || busy) return;
+    const next = moveProduct(productsRef.current, index, index + delta);
+    if (next === productsRef.current) return;
+    await persistOrder(next);
+  }
+
+  async function dropAt(to: number) {
+    if (dragIndex === null) return;
+    const from = dragIndex;
+    setDragIndex(null);
+    setOverIndex(null);
+    if (from === to || reordering || busy) return;
+    const next = moveProduct(productsRef.current, from, to);
+    await persistOrder(next);
+  }
+
   async function toggleActive(product: Product) {
-    if (togglingId || busy) return;
+    if (togglingId || busy || reordering) return;
     setTogglingId(product.id);
     setError("");
     try {
@@ -33,7 +91,11 @@ export default function ProductsListPage() {
         method: "PUT",
         body: JSON.stringify({ active: !product.active }),
       });
-      setProducts((list) => list.map((item) => (item.id === saved.id ? saved : item)));
+      setProducts((list) => {
+        const next = list.map((item) => (item.id === saved.id ? saved : item));
+        productsRef.current = next;
+        return next;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao atualizar");
     } finally {
@@ -56,14 +118,44 @@ export default function ProductsListPage() {
     }
   }
 
+  function orderControls(index: number) {
+    const locked = reordering || busy;
+    return (
+      <div className="order-controls">
+        <span className="order-index" aria-label={`Posição ${index + 1}`}>
+          {index + 1}
+        </span>
+        <button
+          className="btn sm ghost order-btn"
+          type="button"
+          aria-label="Subir produto"
+          disabled={locked || index === 0}
+          onClick={() => moveBy(index, -1)}
+        >
+          ↑
+        </button>
+        <button
+          className="btn sm ghost order-btn"
+          type="button"
+          aria-label="Descer produto"
+          disabled={locked || index === products.length - 1}
+          onClick={() => moveBy(index, 1)}
+        >
+          ↓
+        </button>
+      </div>
+    );
+  }
+
   function productActions(product: Product) {
     const toggling = togglingId === product.id;
+    const locked = toggling || busy || reordering;
     return (
       <>
         <button
           className="btn sm ghost"
           type="button"
-          disabled={toggling || busy}
+          disabled={locked}
           onClick={() => toggleActive(product)}
         >
           {toggling ? "Salvando..." : product.active ? "Desativar" : "Ativar"}
@@ -86,14 +178,17 @@ export default function ProductsListPage() {
           Novo produto
         </Link>
       </div>
-      <p className="muted">Desative para esconder o produto da vitrine sem excluir.</p>
+      <p className="muted">
+        Desative para esconder da vitrine sem excluir. Arraste ou use as setas para definir a ordem da loja.
+      </p>
       {error ? <p className="msg err">{error}</p> : null}
-      
+
       {/* Tabela para desktop */}
       <div className="panel-card product-table-desktop">
         <table className="table">
           <thead>
             <tr>
+              <th>Ordem</th>
               <th>Nome</th>
               <th>Preço</th>
               <th>Estoque</th>
@@ -105,8 +200,44 @@ export default function ProductsListPage() {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
+            {products.map((product, index) => (
+              <tr
+                key={product.id}
+                className={`product-order-row${dragIndex === index ? " is-dragging" : ""}${overIndex === index && dragIndex !== index ? " is-over" : ""}`}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                  setOverIndex(index);
+                }}
+                onDragLeave={() => {
+                  setOverIndex((current) => (current === index ? null : current));
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  dropAt(index);
+                }}
+              >
+                <td>
+                  <div className="order-cell">
+                    <span
+                      className="drag-handle"
+                      title="Arraste para reordenar"
+                      draggable={!reordering && !busy}
+                      onDragStart={(event) => {
+                        setDragIndex(index);
+                        event.dataTransfer.effectAllowed = "move";
+                        event.dataTransfer.setData("text/plain", String(index));
+                      }}
+                      onDragEnd={() => {
+                        setDragIndex(null);
+                        setOverIndex(null);
+                      }}
+                    >
+                      ⋮⋮
+                    </span>
+                    {orderControls(index)}
+                  </div>
+                </td>
                 <td>{product.name}</td>
                 <td>{formatBRL(product.price)}</td>
                 <td>{product.stock <= 0 ? "esgotado" : product.stock}</td>
@@ -123,13 +254,44 @@ export default function ProductsListPage() {
 
       {/* Cards para mobile */}
       <div className="product-cards-mobile">
-        {products.map((product) => (
-          <article key={product.id} className="panel-card product-card-mobile">
+        {products.map((product, index) => (
+          <article
+            key={product.id}
+            className={`panel-card product-card-mobile${dragIndex === index ? " is-dragging" : ""}${overIndex === index && dragIndex !== index ? " is-over" : ""}`}
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "move";
+              setOverIndex(index);
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              dropAt(index);
+            }}
+          >
+            <div className="product-card-order">
+              <span
+                className="drag-handle"
+                title="Arraste para reordenar"
+                draggable={!reordering && !busy}
+                onDragStart={(event) => {
+                  setDragIndex(index);
+                  event.dataTransfer.effectAllowed = "move";
+                  event.dataTransfer.setData("text/plain", String(index));
+                }}
+                onDragEnd={() => {
+                  setDragIndex(null);
+                  setOverIndex(null);
+                }}
+              >
+                ⋮⋮
+              </span>
+              {orderControls(index)}
+            </div>
             <div className="product-card-header">
               <h3>{product.name}</h3>
               <span className="product-card-price">{formatBRL(product.price)}</span>
             </div>
-            
+
             <div className="product-card-info">
               <div className="product-card-badges">
                 {product.active && <span className="badge success">Ativo</span>}
@@ -139,7 +301,7 @@ export default function ProductsListPage() {
                 {product.personalized && <span className="badge info">Personalizado</span>}
                 {product.cartOffer && <span className="badge warning">No carrinho</span>}
               </div>
-              
+
               {product.yampiToken && (
                 <div className="product-card-row">
                   <span className="label">Token Yampi:</span>

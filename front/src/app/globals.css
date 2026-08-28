@@ -1534,6 +1534,64 @@ img { max-width: 100%; display: block; }
   grid-column: 1 / -1;
 }
 
+.order-cell,
+.product-card-order,
+.order-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.product-card-order {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.order-index {
+  min-width: 22px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+  text-align: center;
+}
+
+.order-btn {
+  min-width: 36px;
+  padding: 6px 10px;
+}
+
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  cursor: grab;
+  color: var(--muted);
+  font-size: 16px;
+  letter-spacing: -2px;
+  user-select: none;
+  line-height: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.product-order-row.is-dragging,
+.product-card-mobile.is-dragging {
+  opacity: 0.45;
+}
+
+.product-order-row.is-over td,
+.product-card-mobile.is-over {
+  background: rgba(255, 230, 0, 0.08);
+}
+
+.product-order-row.is-over td:first-child {
+  box-shadow: inset 3px 0 0 var(--yellow);
+}
+
 @media (max-width: 900px) {
   /* Ajustes da loja pública */
   .hero, .story, .grid-products {
@@ -1724,6 +1782,15 @@ img { max-width: 100%; display: block; }
   .access-cards-mobile,
   .product-cards-mobile {
     display: block;
+  }
+
+  .product-card-order {
+    flex-wrap: wrap;
+  }
+
+  .order-btn {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 

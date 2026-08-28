@@ -83,12 +83,13 @@ export default function EditProductPage() {
           <input value={product.sku} onChange={(e) => setProduct({ ...product, sku: e.target.value })} />
         </label>
         <label>
-          Ordem
+          Ordem na vitrine
           <input
             type="number"
             value={product.sortOrder}
             onChange={(e) => setProduct({ ...product, sortOrder: Number(e.target.value) })}
           />
+          <span className="field-hint">Também dá para arrastar ou usar as setas na lista de produtos.</span>
         </label>
         <ProductImagesField
           images={product.images ?? []}
