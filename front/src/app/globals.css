@@ -105,8 +105,9 @@ img { max-width: 100%; display: block; }
   top: 0;
   z-index: 40;
   backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.92);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(9, 9, 11, 0.94);
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
 }
 
 .site-header-inner {
@@ -612,9 +613,10 @@ img { max-width: 100%; display: block; }
 }
 
 .site-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: #09090b;
+  border-top: 1px solid var(--line);
   padding: 28px 0 40px;
-  color: var(--page-muted);
+  color: var(--muted);
 }
 
 .site-footer-inner {
