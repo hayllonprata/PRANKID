@@ -247,7 +247,7 @@ img { max-width: 100%; display: block; }
   box-shadow: 14px 14px 0 var(--magenta);
   overflow: hidden;
   min-height: 380px;
-  transform: rotate(2deg);
+  transform: rotate(2deg) translate3d(var(--drift-x, 0px), var(--drift-y, 0px), 0);
 }
 
 .hero-frame img {
@@ -268,8 +268,17 @@ img { max-width: 100%; display: block; }
   box-shadow: 4px 4px 0 #000;
 }
 
-.sticker.s1 { top: 18px; left: -12px; transform: rotate(-12deg); }
-.sticker.s2 { bottom: 24px; right: -8px; background: var(--yellow); transform: rotate(8deg); }
+.sticker.s1 {
+  top: 18px;
+  left: -12px;
+  transform: rotate(-12deg) translate3d(var(--drift-x, 0px), var(--drift-y, 0px), 0);
+}
+.sticker.s2 {
+  bottom: 24px;
+  right: -8px;
+  background: var(--yellow);
+  transform: rotate(8deg) translate3d(var(--drift-x, 0px), var(--drift-y, 0px), 0);
+}
 
 .section {
   padding: 72px 0;
@@ -312,6 +321,10 @@ img { max-width: 100%; display: block; }
   border: 2px solid #000;
   box-shadow: 8px 8px 0 var(--magenta);
   overflow: hidden;
+}
+
+.crew-card.is-drifting {
+  transform: translate3d(0, var(--drift-y, 0px), 0);
 }
 
 .crew-card img {
@@ -386,6 +399,15 @@ img { max-width: 100%; display: block; }
 @media (prefers-reduced-motion: reduce) {
   .products-track.is-animated {
     transition-duration: 0.01ms;
+  }
+  .hero-frame {
+    transform: rotate(2deg);
+  }
+  .sticker.s1 { transform: rotate(-12deg); }
+  .sticker.s2 { transform: rotate(8deg); }
+  .story-media,
+  .crew-card.is-drifting {
+    transform: none;
   }
 }
 
@@ -503,6 +525,17 @@ img { max-width: 100%; display: block; }
   height: 340px;
   object-fit: cover;
   border: 2px solid #000;
+}
+
+.story-media {
+  overflow: hidden;
+  border: 2px solid #000;
+  transform: translate3d(var(--drift-x, 0px), var(--drift-y, 0px), 0);
+}
+
+.story-media img,
+.story-media .story-placeholder {
+  border: 0;
 }
 
 .story-placeholder {
@@ -1484,7 +1517,9 @@ img { max-width: 100%; display: block; }
     grid-template-columns: 1fr;
   }
   .crew-nav { justify-self: center; }
-  .hero-frame { transform: none; }
+  .hero-frame {
+    transform: translate3d(var(--drift-x, 0px), var(--drift-y, 0px), 0);
+  }
   
   /* Layout do painel - transformar em single column */
   .panel-shell {
@@ -1662,6 +1697,12 @@ img { max-width: 100%; display: block; }
   .access-cards-mobile,
   .product-cards-mobile {
     display: block;
+  }
+}
+
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .hero-frame {
+    transform: none;
   }
 }
 

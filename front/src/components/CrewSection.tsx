@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { mediaUrl, type CrewShot } from "@/lib/api";
 import { siteCopy } from "@/lib/site-copy";
+import { useScrollDrift } from "@/hooks/useScrollDrift";
 
 const PAGE_SIZE = 3;
 
@@ -11,6 +12,8 @@ export function CrewSection({ shots }: { shots: CrewShot[] }) {
   const [page, setPage] = useState(0);
   const pageCount = Math.max(1, Math.ceil(photos.length / PAGE_SIZE));
   const carousel = photos.length > PAGE_SIZE;
+  const driftFirst = useScrollDrift<HTMLElement>(0.12);
+  const driftLast = useScrollDrift<HTMLElement>(-0.12);
 
   const visible = useMemo(() => {
     const start = (page % pageCount) * PAGE_SIZE;
@@ -41,12 +44,20 @@ export function CrewSection({ shots }: { shots: CrewShot[] }) {
             </button>
           ) : null}
           <div className="crew-grid">
-            {visible.map((shot) => (
-              <figure className="crew-card" key={shot.id}>
-                <img src={mediaUrl(shot.imageUrl)} alt={shot.caption || "Comprador PRANKID"} />
-                {shot.caption ? <figcaption>{shot.caption}</figcaption> : null}
-              </figure>
-            ))}
+            {visible.map((shot, index) => {
+              const driftRef =
+                index === 0 ? driftFirst : index === visible.length - 1 && index !== 0 ? driftLast : undefined;
+              return (
+                <figure
+                  className={`crew-card${driftRef ? " is-drifting" : ""}`}
+                  key={shot.id}
+                  ref={driftRef}
+                >
+                  <img src={mediaUrl(shot.imageUrl)} alt={shot.caption || "Comprador PRANKID"} />
+                  {shot.caption ? <figcaption>{shot.caption}</figcaption> : null}
+                </figure>
+              );
+            })}
           </div>
           {carousel ? (
             <button
