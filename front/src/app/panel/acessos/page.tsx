@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AccessPieChart } from "@/components/panel/AccessPieChart";
 import { ConfirmModal } from "@/components/panel/ConfirmModal";
 import { api } from "@/lib/api";
 
@@ -23,11 +24,19 @@ type SiteAccess = {
   lastSeenAt: string;
 };
 
+type ChartSlice = { label: string; count: number };
+
 type AccessReport = {
   uniqueIps: number;
   totalVisits: number;
   blockedCount: number;
   gpsCount: number;
+  matched: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+  byState: ChartSlice[];
+  byCountry: ChartSlice[];
   accesses: SiteAccess[];
 };
 
@@ -88,10 +97,28 @@ export default function AccessesPage() {
   const [error, setError] = useState("");
   const [busyId, setBusyId] = useState("");
   const [pending, setPending] = useState<SiteAccess | null>(null);
+  const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [page, setPage] = useState(1);
 
-  async function load() {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebounced(query.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  async function load(nextPage = page, nextQuery = debounced) {
     try {
-      setReport(await api<AccessReport>("/api/admin/accesses"));
+      const params = new URLSearchParams({ page: String(nextPage) });
+      if (nextQuery) params.set("q", nextQuery);
+      const data = await api<AccessReport>(`/api/admin/accesses?${params.toString()}`);
+      if (data.accesses.length === 0 && data.page > 1 && data.matched > 0) {
+        setPage(data.page - 1);
+        return;
+      }
+      setReport(data);
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao carregar acessos");
@@ -99,8 +126,9 @@ export default function AccessesPage() {
   }
 
   useEffect(() => {
-    load();
-  }, []);
+    load(page, debounced);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debounced]);
 
   async function toggleBlock(access: SiteAccess) {
     setBusyId(access.id);
@@ -131,6 +159,10 @@ export default function AccessesPage() {
     }
   }
 
+  const emptyLabel = debounced ? "Nenhum acesso nesta localização." : "Nenhum acesso registrado ainda.";
+  const pageCount = report?.pageCount ?? 1;
+  const currentPage = report?.page ?? page;
+
   return (
     <>
       <h1>Acessos</h1>
@@ -158,6 +190,35 @@ export default function AccessesPage() {
           <p className="muted">IPs bloqueados</p>
           <strong>{report ? report.blockedCount : "…"}</strong>
         </article>
+      </div>
+
+      <div className="access-charts">
+        <AccessPieChart
+          title="Por estado (Brasil)"
+          slices={report?.byState || []}
+          empty="Nenhum acesso no Brasil ainda."
+        />
+        <AccessPieChart
+          title="Por país (fora do Brasil)"
+          slices={report?.byCountry || []}
+          empty="Nenhum acesso fora do Brasil ainda."
+        />
+      </div>
+
+      <div className="access-toolbar panel-card">
+        <label>
+          Pesquisar localização
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Cidade, estado, país ou endereço"
+          />
+        </label>
+        <p className="muted">
+          {report
+            ? `${report.matched} registro${report.matched === 1 ? "" : "s"}${debounced ? " nesta busca" : ""} · página ${currentPage} de ${pageCount}`
+            : "Carregando..."}
+        </p>
       </div>
 
       <div className="panel-card access-table-desktop">
@@ -208,7 +269,7 @@ export default function AccessesPage() {
             ))}
           </tbody>
         </table>
-        {report && report.accesses.length === 0 ? <p className="muted">Nenhum acesso registrado ainda.</p> : null}
+        {report && report.accesses.length === 0 ? <p className="muted">{emptyLabel}</p> : null}
       </div>
 
       <div className="access-cards-mobile">
@@ -260,8 +321,28 @@ export default function AccessesPage() {
             </div>
           </article>
         ))}
-        {report && report.accesses.length === 0 ? <p className="muted">Nenhum acesso registrado ainda.</p> : null}
+        {report && report.accesses.length === 0 ? <p className="muted">{emptyLabel}</p> : null}
       </div>
+
+      {pageCount > 1 ? (
+        <div className="access-pager">
+          <button className="btn sm ghost" type="button" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+            Anterior
+          </button>
+          <span>
+            Página {currentPage} de {pageCount}
+          </span>
+          <button
+            className="btn sm ghost"
+            type="button"
+            disabled={currentPage >= pageCount}
+            onClick={() => setPage(currentPage + 1)}
+          >
+            Próxima
+          </button>
+        </div>
+      ) : null}
+
       <ConfirmModal
         open={Boolean(pending)}
         message={pending ? `Excluir o registro do IP ${pending.ip}? Essa ação não pode ser desfeita.` : ""}

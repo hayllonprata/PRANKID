@@ -487,23 +487,66 @@ adminRouter.get("/size-orders", async (_req, res) => {
   res.json(orders);
 });
 
-adminRouter.get("/accesses", async (_req, res) => {
-  const [accesses, aggregates] = await Promise.all([
+const ACCESS_PAGE_SIZE = 20;
+
+function locationSearchWhere(raw: unknown) {
+  const q = String(raw ?? "").trim();
+  if (!q) return {};
+  const contains = { contains: q, mode: "insensitive" as const };
+  return {
+    OR: [{ address: contains }, { city: contains }, { region: contains }, { country: contains }, { countryCode: contains }],
+  };
+}
+
+function isBrazil(country: string, countryCode: string) {
+  const code = countryCode.trim().toUpperCase();
+  const name = country.trim().toLowerCase();
+  return code === "BR" || name === "brasil" || name === "brazil";
+}
+
+function countBy(values: string[]) {
+  const map = new Map<string, number>();
+  for (const value of values) {
+    const key = value.trim() || "Não identificado";
+    map.set(key, (map.get(key) || 0) + 1);
+  }
+  return [...map.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "pt-BR"));
+}
+
+adminRouter.get("/accesses", async (req, res) => {
+  const page = Math.max(1, Math.floor(Number(req.query.page) || 1));
+  const where = locationSearchWhere(req.query.q);
+  const [accesses, matched, aggregates, blockedCount, gpsCount, locations] = await Promise.all([
     prisma.siteAccess.findMany({
+      where,
       orderBy: [{ lastSeenAt: "desc" }],
+      skip: (page - 1) * ACCESS_PAGE_SIZE,
+      take: ACCESS_PAGE_SIZE,
     }),
+    prisma.siteAccess.count({ where }),
     prisma.siteAccess.aggregate({
       _count: { _all: true },
       _sum: { visitCount: true },
     }),
+    prisma.siteAccess.count({ where: { blocked: true } }),
+    prisma.siteAccess.count({ where: { locationSource: "gps" } }),
+    prisma.siteAccess.findMany({ select: { region: true, country: true, countryCode: true } }),
   ]);
-  const blockedCount = accesses.filter((item) => item.blocked).length;
-  const gpsCount = accesses.filter((item) => item.locationSource === "gps").length;
+  const brazil = locations.filter((item) => isBrazil(item.country, item.countryCode));
+  const abroad = locations.filter((item) => !isBrazil(item.country, item.countryCode));
   res.json({
     uniqueIps: aggregates._count._all,
     totalVisits: aggregates._sum.visitCount || 0,
     blockedCount,
     gpsCount,
+    matched,
+    page,
+    pageSize: ACCESS_PAGE_SIZE,
+    pageCount: Math.max(1, Math.ceil(matched / ACCESS_PAGE_SIZE)),
+    byState: countBy(brazil.map((item) => item.region)),
+    byCountry: countBy(abroad.map((item) => item.country)),
     accesses,
   });
 });
