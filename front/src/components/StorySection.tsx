@@ -4,7 +4,7 @@ import { mediaUrl, type Story } from "@/lib/api";
 import { useScrollDrift } from "@/hooks/useScrollDrift";
 
 export function StorySection({ story }: { story: Story | null }) {
-  const mediaRef = useScrollDrift<HTMLDivElement>(0.1);
+  const mediaRef = useScrollDrift<HTMLDivElement>(0.08);
 
   if (!story) return null;
   const src = mediaUrl(story.imageUrl);

@@ -6,6 +6,7 @@ type DriftNode = {
   el: HTMLElement;
   speedY: number;
   speedX: number;
+  origin: "viewport" | "page";
 };
 
 const nodes = new Set<DriftNode>();
@@ -24,12 +25,13 @@ function tick() {
   }
   const view = window.innerHeight || 1;
   const mid = view / 2;
-  nodes.forEach(({ el, speedY, speedX }) => {
+  const scrolled = window.scrollY || 0;
+  nodes.forEach(({ el, speedY, speedX, origin }) => {
     const rect = el.getBoundingClientRect();
     if (rect.bottom < -140 || rect.top > view + 140) return;
-    const delta = rect.top + rect.height / 2 - mid;
-    const y = Math.max(-24, Math.min(24, delta * speedY));
-    const x = Math.max(-14, Math.min(14, delta * speedX));
+    const delta = origin === "page" ? -scrolled : rect.top + rect.height / 2 - mid;
+    const y = Math.max(-52, Math.min(52, delta * speedY));
+    const x = Math.max(-18, Math.min(18, delta * speedX));
     el.style.setProperty("--drift-y", `${y.toFixed(1)}px`);
     el.style.setProperty("--drift-x", `${x.toFixed(1)}px`);
   });
@@ -56,15 +58,20 @@ function releaseListener() {
   frame = 0;
 }
 
-export function useScrollDrift<T extends HTMLElement = HTMLElement>(speedY = 0.12, speedX = 0) {
+export function useScrollDrift<T extends HTMLElement = HTMLElement>(
+  speedY = 0.12,
+  speedX = 0,
+  origin: "viewport" | "page" = "viewport",
+) {
   const nodeRef = useRef<DriftNode | null>(null);
 
   useEffect(() => {
     if (nodeRef.current) {
       nodeRef.current.speedY = speedY;
       nodeRef.current.speedX = speedX;
+      nodeRef.current.origin = origin;
     }
-  }, [speedY, speedX]);
+  }, [speedY, speedX, origin]);
 
   return useCallback(
     (el: T | null) => {
@@ -74,12 +81,12 @@ export function useScrollDrift<T extends HTMLElement = HTMLElement>(speedY = 0.1
         releaseListener();
       }
       if (!el) return;
-      const node: DriftNode = { el, speedY, speedX };
+      const node: DriftNode = { el, speedY, speedX, origin };
       nodeRef.current = node;
       nodes.add(node);
       ensureListener();
       tick();
     },
-    [speedY, speedX],
+    [speedY, speedX, origin],
   );
 }

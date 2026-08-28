@@ -12,8 +12,8 @@ export function CrewSection({ shots }: { shots: CrewShot[] }) {
   const [page, setPage] = useState(0);
   const pageCount = Math.max(1, Math.ceil(photos.length / PAGE_SIZE));
   const carousel = photos.length > PAGE_SIZE;
-  const driftFirst = useScrollDrift<HTMLElement>(0.12);
-  const driftLast = useScrollDrift<HTMLElement>(-0.12);
+  const driftFirst = useScrollDrift<HTMLElement>(0.09);
+  const driftLast = useScrollDrift<HTMLElement>(-0.09);
 
   const visible = useMemo(() => {
     const start = (page % pageCount) * PAGE_SIZE;

@@ -5,9 +5,9 @@ import { siteCopy } from "@/lib/site-copy";
 import { useScrollDrift } from "@/hooks/useScrollDrift";
 
 export function HeroSection({ hero }: { hero: Hero | null }) {
-  const frameRef = useScrollDrift<HTMLDivElement>(0.08);
-  const stickerOneRef = useScrollDrift<HTMLSpanElement>(-0.16, 0.05);
-  const stickerTwoRef = useScrollDrift<HTMLSpanElement>(0.18, -0.04);
+  const frameRef = useScrollDrift<HTMLDivElement>(0.06, 0, "page");
+  const stickerOneRef = useScrollDrift<HTMLSpanElement>(-0.1, 0.04, "page");
+  const stickerTwoRef = useScrollDrift<HTMLSpanElement>(0.12, -0.03, "page");
 
   if (!hero || !hero.enabled) return null;
   const src = mediaUrl(hero.imageUrl);
