@@ -7,8 +7,9 @@ export const metadata: Metadata = {
   description:
     "A história de um garoto das ruas que pixou o luxo, virou o artista mais respeitado da cidade e nunca esqueceu de onde veio.",
   icons: {
-    icon: [{ url: "/favicon.png", type: "image/png" }],
-    apple: "/favicon.png",
+    icon: [{ url: "/favicon.png?v=20260828", type: "image/png" }],
+    apple: "/favicon.png?v=20260828",
+    shortcut: "/favicon.png?v=20260828",
   },
   viewport: {
     width: "device-width",
