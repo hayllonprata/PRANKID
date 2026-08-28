@@ -47,7 +47,7 @@ function ProductCard({
               onSelect(product);
             }}
           >
-            {soldOut ? "Esgotado" : product.personalized ? "Personalizar" : product.hasSizes ? "Tamanho" : "Adicionar"}
+            {soldOut ? "Esgotado" : product.personalized ? "Personalizar" : "Adicionar"}
           </button>
         </div>
       </div>
