@@ -12,6 +12,7 @@ import { LegendSection } from "@/components/LegendSection";
 import { ProductsSection } from "@/components/ProductsSection";
 import { StorySection } from "@/components/StorySection";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { CaptureLocation } from "@/components/CaptureLocation";
 
 export default function HomePage() {
   const { syncCatalog } = useCart();
@@ -56,6 +57,7 @@ export default function HomePage() {
         products={data.products}
       />
       <WhatsAppButton number={data.settings.whatsapp} />
+      <CaptureLocation />
     </>
   );
 }

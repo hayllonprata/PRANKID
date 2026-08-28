@@ -125,10 +125,13 @@ model SiteAccess {
   region      String   @default("")
   country     String   @default("")
   countryCode String   @default("")
-  latitude    Float?
-  longitude   Float?
-  userAgent   String   @default("")
-  blocked     Boolean  @default(false)
+  latitude       Float?
+  longitude      Float?
+  accuracy       Float?
+  address        String   @default("")
+  locationSource String   @default("ip")
+  userAgent      String   @default("")
+  blocked        Boolean  @default(false)
   firstSeenAt DateTime @default(now())
   lastSeenAt  DateTime @default(now())
 

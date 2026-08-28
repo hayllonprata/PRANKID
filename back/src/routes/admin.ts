@@ -498,10 +498,12 @@ adminRouter.get("/accesses", async (_req, res) => {
     }),
   ]);
   const blockedCount = accesses.filter((item) => item.blocked).length;
+  const gpsCount = accesses.filter((item) => item.locationSource === "gps").length;
   res.json({
     uniqueIps: aggregates._count._all,
     totalVisits: aggregates._sum.visitCount || 0,
     blockedCount,
+    gpsCount,
     accesses,
   });
 });

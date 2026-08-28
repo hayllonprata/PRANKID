@@ -14,6 +14,9 @@ type SiteAccess = {
   countryCode: string;
   latitude: number | null;
   longitude: number | null;
+  accuracy: number | null;
+  address: string;
+  locationSource: string;
   userAgent: string;
   blocked: boolean;
   firstSeenAt: string;
@@ -24,6 +27,7 @@ type AccessReport = {
   uniqueIps: number;
   totalVisits: number;
   blockedCount: number;
+  gpsCount: number;
   accesses: SiteAccess[];
 };
 
@@ -31,7 +35,20 @@ function formatWhen(value: string) {
   return new Date(value).toLocaleString("pt-BR");
 }
 
+function formatCoords(access: SiteAccess) {
+  if (access.latitude == null || access.longitude == null) return "";
+  return `${access.latitude.toFixed(6)}, ${access.longitude.toFixed(6)}`;
+}
+
+function formatAccuracy(access: SiteAccess) {
+  if (access.locationSource !== "gps" || access.accuracy == null) return "";
+  const meters = Math.round(access.accuracy);
+  if (meters >= 1000) return `± ${(meters / 1000).toFixed(1)} km`;
+  return `± ${meters} m`;
+}
+
 function formatLocation(access: SiteAccess) {
+  if (access.address) return access.address;
   const parts = [access.city, access.region, access.country].filter(Boolean);
   if (parts.length) {
     return access.countryCode ? `${parts.join(" · ")} (${access.countryCode})` : parts.join(" · ");
@@ -41,7 +58,29 @@ function formatLocation(access: SiteAccess) {
 
 function mapsUrl(access: SiteAccess) {
   if (access.latitude == null || access.longitude == null) return "";
-  return `https://www.google.com/maps?q=${access.latitude},${access.longitude}`;
+  return `https://www.google.com/maps?q=${access.latitude},${access.longitude}&z=18`;
+}
+
+function LocationBlock({ access }: { access: SiteAccess }) {
+  const map = mapsUrl(access);
+  const coords = formatCoords(access);
+  const accuracy = formatAccuracy(access);
+  const gps = access.locationSource === "gps";
+  return (
+    <div className="access-location">
+      <div className="access-location-head">
+        <span className={`badge ${gps ? "success" : "muted"}`}>{gps ? "GPS" : "IP"}</span>
+        {accuracy ? <span className="muted">{accuracy}</span> : null}
+      </div>
+      <div>{formatLocation(access)}</div>
+      {coords ? <code className="access-coords">{coords}</code> : null}
+      {map ? (
+        <a href={map} target="_blank" rel="noreferrer">
+          abrir mapa
+        </a>
+      ) : null}
+    </div>
+  );
 }
 
 export default function AccessesPage() {
@@ -96,8 +135,9 @@ export default function AccessesPage() {
     <>
       <h1>Acessos</h1>
       <p className="muted">
-        Cada IP entra uma vez nesta lista (sem duplicar visitantes). A quantidade de acessos sobe só quando o mesmo IP
-        volta depois de 30 minutos. A localização vem da geolocalização do IP.
+        Cada IP entra uma vez nesta lista. A quantidade de acessos sobe quando o mesmo IP volta depois de 30 minutos. A
+        loja pede a localização no navegador; se a pessoa permitir, o painel mostra o ponto GPS (rua e coordenadas). Se
+        recusar, fica a localização aproximada do IP.
       </p>
       {error ? <p className="msg err">{error}</p> : null}
 
@@ -111,12 +151,15 @@ export default function AccessesPage() {
           <strong>{report ? report.totalVisits : "…"}</strong>
         </article>
         <article className="panel-card">
+          <p className="muted">Com GPS</p>
+          <strong>{report ? report.gpsCount ?? 0 : "…"}</strong>
+        </article>
+        <article className="panel-card">
           <p className="muted">IPs bloqueados</p>
           <strong>{report ? report.blockedCount : "…"}</strong>
         </article>
       </div>
 
-      {/* Tabela para desktop */}
       <div className="panel-card access-table-desktop">
         <table className="table">
           <thead>
@@ -131,117 +174,92 @@ export default function AccessesPage() {
             </tr>
           </thead>
           <tbody>
-            {(report?.accesses || []).map((access) => {
-              const map = mapsUrl(access);
-              return (
-                <tr key={access.id}>
-                  <td>
-                    <code>{access.ip}</code>
-                  </td>
-                  <td>
-                    {formatLocation(access)}
-                    {map ? (
-                      <>
-                        {" "}
-                        <a href={map} target="_blank" rel="noreferrer">
-                          mapa
-                        </a>
-                      </>
-                    ) : null}
-                  </td>
-                  <td>{access.visitCount}</td>
-                  <td>{formatWhen(access.firstSeenAt)}</td>
-                  <td>{formatWhen(access.lastSeenAt)}</td>
-                  <td>{access.blocked ? "bloqueado" : "liberado"}</td>
-                  <td className="row-actions">
-                    <button
-                      className="btn sm"
-                      type="button"
-                      disabled={busyId === access.id}
-                      onClick={() => toggleBlock(access)}
-                    >
-                      {access.blocked ? "Liberar" : "Bloquear"}
-                    </button>
-                    <button
-                      className="btn sm magenta"
-                      type="button"
-                      disabled={busyId === access.id}
-                      onClick={() => setPending(access)}
-                    >
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+            {(report?.accesses || []).map((access) => (
+              <tr key={access.id}>
+                <td>
+                  <code>{access.ip}</code>
+                </td>
+                <td>
+                  <LocationBlock access={access} />
+                </td>
+                <td>{access.visitCount}</td>
+                <td>{formatWhen(access.firstSeenAt)}</td>
+                <td>{formatWhen(access.lastSeenAt)}</td>
+                <td>{access.blocked ? "bloqueado" : "liberado"}</td>
+                <td className="row-actions">
+                  <button
+                    className="btn sm"
+                    type="button"
+                    disabled={busyId === access.id}
+                    onClick={() => toggleBlock(access)}
+                  >
+                    {access.blocked ? "Liberar" : "Bloquear"}
+                  </button>
+                  <button
+                    className="btn sm magenta"
+                    type="button"
+                    disabled={busyId === access.id}
+                    onClick={() => setPending(access)}
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
         {report && report.accesses.length === 0 ? <p className="muted">Nenhum acesso registrado ainda.</p> : null}
       </div>
 
-      {/* Cards para mobile */}
       <div className="access-cards-mobile">
-        {(report?.accesses || []).map((access) => {
-          const map = mapsUrl(access);
-          return (
-            <article key={access.id} className="panel-card access-card-mobile">
-              <div className="access-card-header">
-                <code className="access-card-ip">{access.ip}</code>
-                <span className={`access-card-status ${access.blocked ? "blocked" : "active"}`}>
-                  {access.blocked ? "bloqueado" : "liberado"}
-                </span>
-              </div>
-              
-              <div className="access-card-info">
-                <div className="access-card-row">
-                  <span className="label">Localização:</span>
-                  <span>
-                    {formatLocation(access)}
-                    {map ? (
-                      <>
-                        {" "}
-                        <a href={map} target="_blank" rel="noreferrer">
-                          ver mapa
-                        </a>
-                      </>
-                    ) : null}
-                  </span>
-                </div>
-                <div className="access-card-row">
-                  <span className="label">Acessos:</span>
-                  <span>{access.visitCount}</span>
-                </div>
-                <div className="access-card-row">
-                  <span className="label">Primeiro:</span>
-                  <span>{formatWhen(access.firstSeenAt)}</span>
-                </div>
-                <div className="access-card-row">
-                  <span className="label">Último:</span>
-                  <span>{formatWhen(access.lastSeenAt)}</span>
-                </div>
-              </div>
+        {(report?.accesses || []).map((access) => (
+          <article key={access.id} className="panel-card access-card-mobile">
+            <div className="access-card-header">
+              <code className="access-card-ip">{access.ip}</code>
+              <span className={`access-card-status ${access.blocked ? "blocked" : "active"}`}>
+                {access.blocked ? "bloqueado" : "liberado"}
+              </span>
+            </div>
 
-              <div className="access-card-actions">
-                <button
-                  className="btn sm"
-                  type="button"
-                  disabled={busyId === access.id}
-                  onClick={() => toggleBlock(access)}
-                >
-                  {access.blocked ? "Liberar" : "Bloquear"}
-                </button>
-                <button
-                  className="btn sm magenta"
-                  type="button"
-                  disabled={busyId === access.id}
-                  onClick={() => setPending(access)}
-                >
-                  Excluir
-                </button>
+            <div className="access-card-info">
+              <div className="access-card-row">
+                <span className="label">Localização:</span>
+                <LocationBlock access={access} />
               </div>
-            </article>
-          );
-        })}
+              <div className="access-card-row">
+                <span className="label">Acessos:</span>
+                <span>{access.visitCount}</span>
+              </div>
+              <div className="access-card-row">
+                <span className="label">Primeiro:</span>
+                <span>{formatWhen(access.firstSeenAt)}</span>
+              </div>
+              <div className="access-card-row">
+                <span className="label">Último:</span>
+                <span>{formatWhen(access.lastSeenAt)}</span>
+              </div>
+            </div>
+
+            <div className="access-card-actions">
+              <button
+                className="btn sm"
+                type="button"
+                disabled={busyId === access.id}
+                onClick={() => toggleBlock(access)}
+              >
+                {access.blocked ? "Liberar" : "Bloquear"}
+              </button>
+              <button
+                className="btn sm magenta"
+                type="button"
+                disabled={busyId === access.id}
+                onClick={() => setPending(access)}
+              >
+                Excluir
+              </button>
+            </div>
+          </article>
+        ))}
         {report && report.accesses.length === 0 ? <p className="muted">Nenhum acesso registrado ainda.</p> : null}
       </div>
       <ConfirmModal

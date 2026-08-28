@@ -8,7 +8,7 @@ import { fillBriefFromTranscript, transcribeAudioFile } from "../lib/openai-tran
 import { productImageInclude } from "../lib/product-images.js";
 import { parseProductSize } from "../lib/product-sizes.js";
 import { publicSettings, serializeProduct } from "../lib/serialize.js";
-import { isIpBlocked, trackSiteAccess } from "../lib/site-access.js";
+import { isIpBlocked, saveGpsLocation, trackSiteAccess } from "../lib/site-access.js";
 import { uploadDir } from "./upload.js";
 
 export const storeRouter = Router();
@@ -23,6 +23,19 @@ storeRouter.use(async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+storeRouter.post("/location", async (req, res) => {
+  const saved = await saveGpsLocation(req, {
+    latitude: req.body?.latitude,
+    longitude: req.body?.longitude,
+    accuracy: req.body?.accuracy,
+  });
+  if (!saved) {
+    res.status(400).json({ error: "Localização inválida" });
+    return;
+  }
+  res.json({ ok: true });
 });
 
 storeRouter.get("/", async (req, res) => {
